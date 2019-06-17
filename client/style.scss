@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css?family=Pathway+Gothic+One&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Gabriela&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Acme&display=swap');
+
+.App {
+  &-title {
+    text-align: center;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+    color: #f1c40f;
+  }
+  font-family: Gabriela, serif;
+}
+
+h1, h2, h3 {
+  font-family: Acme, 'Pathway Gothic One', Helvetica, Arial, "Trebuchet MS", sans-serif;
+}
+h1 {
+  font-size: 3rem;
+}
+
+.coffee {
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-radius: 0.25rem;
+  word-wrap: break-word;
+  padding: 10px;
+  height: 350px;
+
+  img {
+    width: 85%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  h2 {
+    margin-top: 10px;
+    font-size: 1rem;
+  }
+
+  p {
+    font-size: 0.65rem;
+    //font-family: "Roboto Slab",serif;
+  }
+
+  button {
+    background-color: #329f80;
+    bottom: 10px;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    color: #fff;
+    font-size: 0.9rem;
+    font-family: 'Pathway Gothic One', Helvetica, Arial, "Trebuchet MS", sans-serif;
+    left: 10%;
+    line-height: 1.5;
+    position: absolute;
+    padding: 0.375rem 0.75rem;
+    width: 80%;
+  }
+}
+
+.paymentModal {
+  .row {
+    margin-bottom: 10px;
+  }
+
+  .titleModal p {
+    font-family: Acme, serif;
+    text-align: center;
+    font-size: 1.5rem;
+    line-height: 75px;
+    margin: 0;
+  }
+
+  .progress {
+    border-radius: 0;
+    position: relative;
+    top: -26px;
+    width: 498px;
+    left: -31px;
+  }
+
+  .qrcodeWrapper {
+    padding: 10px;
+    marginRight: 20px;
+    marginBottom: 10px;
+    borderRadius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+
+.paymentRequestString {
+  span {
+    font-family: Acme, serif;
+  }
+  font-size: 0.6rem;
+  word-break: break-word;
+}
+
+.invoiceInfo {
+  font-family: Gabriela, serif;
+
+  p {
+    margin-bottom: 0.25rem;
+  }
+
+  .invoiceInfo-col1 {
+    :first-child {
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    font-size: 0.65rem;
+  }
+
+  .invoiceInfo-col2 {
+    :first-child {
+      font-size: 0.8rem;
+    }
+    font-size: 0.65rem;
+  }
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "price": 0.05,
+    "name": "Master Origin Ethiopia",
+    "description": "Scent of orange blossom, but its notes of compote come from the drying of Arabica coffee cherries in the sun",
+    "image": "https://www.nespresso.com/ecom/medias/sys_master/public/10831332802590/C-0363-Ethiopia-2000x2000.png"
+  },
+  {
+    "id": 2,
+    "price": 0.05,
+    "name": "Fortissio Lungo",
+    "description": "An intense body and aroma in this blend was only possible with the presence of an Indian coffee bean, the Arabica Malabar grain of the Monção",
+    "image": "https://www.nespresso.com/ecom/medias/sys_master/public/10386856902686/C-0014-2000x2000.png"
+  },
+  {
+    "id": 3,
+    "price": 0.05,
+    "name": "Capriccio Espresso",
+    "description": "A mix of Arabica from South America and a touch of Robusta, Capriccio is a rich espresso, with a very characteristic note of cereals",
+    "image": "https://www.nespresso.com/ecom/medias/sys_master/public/10386856116254/C-0003-2000x2000.png"
+  },
+  {
+    "id": 4,
+    "price": 0.05,
+    "name": "Arpeggio Intenso",
+    "description": "Pure Arabica from South and Central America, very roasted, Arpeggio has an intense character and a dense body, reinforced by notes of cocoa",
+    "image": "https://www.nespresso.com/ecom/medias/sys_master/public/10386855919646/C-0001-2000x2000.png"
+  },
+  {
+    "id": 5,
+    "price": 0.05,
+    "name": "Caramelito Variation",
+    "description": "The sweet caramel aroma softens the crisp notes of the Grand Cru Livanto",
+    "image": "https://www.nespresso.com/ecom/medias/sys_master/public/10386858770462/C-0066-2000x2000.png"
+  }
+]
