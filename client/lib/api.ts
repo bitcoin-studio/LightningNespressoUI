@@ -38,6 +38,10 @@ class API {
   }
   */
 
+  getCoffeesWebSocket() {
+    let wsUrl = this.url.replace('https', 'wss').replace('http', 'ws');
+    return new WebSocket(`${wsUrl}/coffees`);
+  }
 
   // Internal fetch function. Makes a request to the server, and either returns
   // JSON parsed data from the request, or throws an error.
@@ -50,7 +54,7 @@ class API {
     let query = '';
     const headers = new Headers();
     headers.append('Accept', 'application/json');
-    headers.append('X-CoinAPI-Key', '73034021-0EBC-493D-8A00-E0F138111F41');
+    //headers.append('X-CoinAPI-Key', '73034021-0EBC-493D-8A00-E0F138111F41');
 
     if (method === 'POST' || method === 'PUT') {
       body = JSON.stringify(args);

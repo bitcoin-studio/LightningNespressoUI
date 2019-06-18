@@ -1,15 +1,29 @@
 import { EventEmitter } from 'events';
-import {ICoffee} from '../client/types';
+//import {ICoffee} from '../client/types';
+import {Invoice} from '@radar/lnrpc'
 
 // All logic and storage around posts happens in here. To keep things simple,
 // we're just storing posts in memory. Every time you restart the server, all
 // posts will be lost. For long term storage, you'd want to look into putting
 // these into a database.
 
-class CoffeeManager extends EventEmitter {
-  coffees: ICoffee[] = [];
+
+class Manager extends EventEmitter {
+  //coffees: ICoffee[] = [];
+
+  constructor() {
+    super()
+  }
+
+  // Emit 'invoice-settlement' event
+  // used in server/index.ts
+  handleInvoiceSettlement(invoice: Invoice) {
+    this.emit('invoice-settlement', invoice)
+  }
+
 
   // Mark a coffee as paid
+  /*
   markCoffeePaid(id: number) {
     console.log('markCoffeePaidmarkCoffeePaidmarkCoffeePaidmarkCoffeePaidmarkCoffeePaidmarkCoffeePaid')
     let updatedCoffees;
@@ -23,13 +37,13 @@ class CoffeeManager extends EventEmitter {
       return p;
     });
 
-    /*
     if (updatedCoffees) {
       this.emit('coffee', updatedCoffees);
     }
-    */
-    this.emit('invoice', 'paid');
+    this.emit('invoice-settlement', 'test_arg');
   }
+  */
 }
 
-export default new CoffeeManager();
+const manager = new Manager();
+export default manager;

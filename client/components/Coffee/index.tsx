@@ -3,7 +3,8 @@ import api from 'lib/api'
 import data from '../../data.json'
 import PaymentModal from '../PaymentModal'
 import { ICoffee } from '../../types'
-import CoffeeManager from '../../../server/coffeeManager'
+
+interface Props {}
 
 interface State {
   chosenCoffee: string;
@@ -27,16 +28,25 @@ const INITIAL_STATE: State = {
   progress: 0
 }
 
-export default class Coffee extends React.Component<State> {
+export default class Coffee extends React.Component<Props, State> {
   state = {...INITIAL_STATE}
 
   componentDidMount(): void {
     this.setState({nodeInfo: this.getNodeInfo()})
 
-    //this.getPrice()
-
-    // Listen to unpaid invoices
-    this.listenPayment()
+    // Listen for paid invoice, close modal
+    const socket = api.getCoffeesWebSocket();
+    socket.addEventListener('message', ev => {
+      try {
+        const msg = JSON.parse(ev.data.toString());
+        if (msg && msg.type === 'invoice-settlement') {
+          console.log('Invoice settled!', msg.data)
+          this.closeModal()
+        }
+      } catch(err) {
+        console.error(err);
+      }
+    });
   }
 
   componentWillUnmount() {
@@ -94,13 +104,9 @@ export default class Coffee extends React.Component<State> {
   }
 
   private closeModal = async () => {
+    console.log('Close modal')
     this.setState({modal: false})
     clearInterval(this.state.modalTimer)
-
-    // Close modal when invoice paid
-
-    // Get price, convert fiat-btc
-    //this.getPrice()
   }
 
   private runProgressBar = async () => {
@@ -127,12 +133,6 @@ export default class Coffee extends React.Component<State> {
     const info = await api.getNodeInfo()
     console.log('info----------------------', info)
     this.setState({nodeInfo: info})
-  }
-
-  private listenPayment = async () => {
-    CoffeeManager.on('invoicePaid', () => {
-      console.log('Halleluiah')
-    })
   }
 
   private getPrice = async () => {
