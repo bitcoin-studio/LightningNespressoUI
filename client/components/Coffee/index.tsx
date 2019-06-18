@@ -7,9 +7,11 @@ import { ICoffee } from '../../types'
 interface Props {}
 
 interface State {
+  BTCEUR: number;
   chosenCoffee: string;
   data: ICoffee | null;
   error: Error | null;
+  invoiceValue: number;
   nodeInfo: any;
   modal: boolean;
   modalTimer: any;
@@ -18,9 +20,11 @@ interface State {
 }
 
 const INITIAL_STATE: State = {
+  BTCEUR: null,
   chosenCoffee: '',
   data: null,
   error: null,
+  invoiceValue: null,
   modal: false,
   modalTimer: null,
   nodeInfo: null,
@@ -62,7 +66,7 @@ export default class Coffee extends React.Component<Props, State> {
           <h2>{item.name}</h2>
           <p>{item.description}</p>
           <button onClick={() => this.paymentModal(item.name)}>
-            Buy for O.O5€
+            Buy for O.50€
           </button>
         </div>
       )
@@ -71,12 +75,14 @@ export default class Coffee extends React.Component<Props, State> {
       <>
         {coffees}
         <PaymentModal
+          BTCEUR={this.state.BTCEUR}
           chosenCoffee={this.state.chosenCoffee}
           closeModal={this.closeModal}
           isPaymentModalOpen={this.state.modal}
+          nodeInfo={this.state.nodeInfo}
           paymentRequest={this.state.paymentRequest}
           progress={this.state.progress}
-          nodeInfo={this.state.nodeInfo}
+          invoiceValue={this.state.invoiceValue}
         />
       </>
     )
@@ -84,8 +90,24 @@ export default class Coffee extends React.Component<Props, State> {
 
   private generatePaymentRequest = async (chosenCoffee: string) => {
     try {
-      // API request to setup post for payment
-      const res = await api.generatePaymentRequest(chosenCoffee)
+      console.log('generatePaymentRequest')
+      let value;
+      let prices = await api.getPrice();
+      let BTCEUR = Number((prices.EUR).toFixed(0))
+      this.setState({'BTCEUR': BTCEUR})
+      console.log('prices EUR ', BTCEUR)
+      value = Number(((1 * 0.50 / BTCEUR) * 10**8).toFixed(0))
+      console.log('value', value)
+
+      // If value > 20 000 sats, return
+      if (value > 20000) {
+        console.log('value greater than 20 000 sats!!', value)
+        return
+      }
+
+      this.setState({invoiceValue: value})
+
+      const res = await api.generatePaymentRequest(chosenCoffee, value)
       this.setState({
         paymentRequest: res.paymentRequest
       })
@@ -133,10 +155,5 @@ export default class Coffee extends React.Component<Props, State> {
     const info = await api.getNodeInfo()
     console.log('info----------------------', info)
     this.setState({nodeInfo: info})
-  }
-
-  private getPrice = async () => {
-    //const data = await api.getPrice()
-    //console.log('data', data)
   }
 }

@@ -20,29 +20,6 @@ class Manager extends EventEmitter {
   handleInvoiceSettlement(invoice: Invoice) {
     this.emit('invoice-settlement', invoice)
   }
-
-
-  // Mark a coffee as paid
-  /*
-  markCoffeePaid(id: number) {
-    console.log('markCoffeePaidmarkCoffeePaidmarkCoffeePaidmarkCoffeePaidmarkCoffeePaidmarkCoffeePaid')
-    let updatedCoffees;
-    this.coffees = this.coffees.map(p => {
-      console.log('id ----------', id)
-      console.log('coffee --- ', p)
-      if (p.id === id) {
-        updatedCoffees = { ...p, hasPaid: true };
-        return updatedCoffees;
-      }
-      return p;
-    });
-
-    if (updatedCoffees) {
-      this.emit('coffee', updatedCoffees);
-    }
-    this.emit('invoice-settlement', 'test_arg');
-  }
-  */
 }
 
 const manager = new Manager();

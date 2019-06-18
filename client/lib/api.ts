@@ -1,22 +1,21 @@
-import { stringify } from 'query-string';
-//import { Post } from 'types';
+import {stringify} from 'query-string'
 
 type ApiMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 class API {
-  url: string;
+  url: string
 
   constructor(url: string) {
-    this.url = url;
+    this.url = url
   }
 
   // Public methods
-  generatePaymentRequest(name: string) {
+  generatePaymentRequest(name: string, value: number) {
     return this.request<{ paymentRequest: string; }>(
       'POST',
       '/generatePaymentRequest',
-      { name },
-    );
+      {name, value},
+    )
   }
 
   getNodeInfo() {
@@ -24,23 +23,20 @@ class API {
       'GET',
       '/getNodeInfo',
       {},
-    );
+    )
   }
 
-  /*
   getPrice() {
-    return this.request<{ paymentRequest: string; }>(
+    return this.request<{ EUR: number, USD: number; }>(
       'GET',
-      'rest.coinapi.io',
-      '/v1/quotes/current',
-    {},
-      )
+      '/getPrice',
+      {},
+    )
   }
-  */
 
   getCoffeesWebSocket() {
-    let wsUrl = this.url.replace('https', 'wss').replace('http', 'ws');
-    return new WebSocket(`${wsUrl}/coffees`);
+    let wsUrl = this.url.replace('https', 'wss').replace('http', 'ws')
+    return new WebSocket(`${wsUrl}/coffees`)
   }
 
   // Internal fetch function. Makes a request to the server, and either returns
@@ -50,19 +46,18 @@ class API {
     path: string,
     args?: object,
   ): Promise<R> {
-    let body = null;
-    let query = '';
-    const headers = new Headers();
-    headers.append('Accept', 'application/json');
+    let body = null
+    let query = ''
+    const headers = new Headers()
+    headers.append('Accept', 'application/json')
     //headers.append('X-CoinAPI-Key', '73034021-0EBC-493D-8A00-E0F138111F41');
 
     if (method === 'POST' || method === 'PUT') {
-      body = JSON.stringify(args);
-      headers.append('Content-Type', 'application/json');
-    }
-    else if (args !== undefined) {
+      body = JSON.stringify(args)
+      headers.append('Content-Type', 'application/json')
+    } else if (args !== undefined) {
       // TS Still thinks it might be undefined(?)
-      query = `?${stringify(args as any)}`;
+      query = `?${stringify(args as any)}`
     }
 
     return fetch(this.url + path + query, {
@@ -73,25 +68,25 @@ class API {
     })
       .then(async res => {
         if (!res.ok) {
-          let errMsg;
+          let errMsg
           try {
-            const errBody = await res.json();
-            if (!errBody.error) throw new Error();
-            errMsg = errBody.error;
-          } catch(err) {
-            throw new Error(`${res.status}: ${res.statusText}`);
+            const errBody = await res.json()
+            if (!errBody.error) throw new Error()
+            errMsg = errBody.error
+          } catch (err) {
+            throw new Error(`${res.status}: ${res.statusText}`)
           }
-          throw new Error(errMsg);
+          throw new Error(errMsg)
         }
-        return res.json();
+        return res.json()
       })
       .then(res => res.data as R)
       .catch((err) => {
-        console.error(`API error calling ${method} ${path}`, err);
-        throw err;
-      });
+        console.error(`API error calling ${method} ${path}`, err)
+        throw err
+      })
   }
 }
 
 // Export a default API that points at the API_PATH environment variable
-export default new API(process.env.API_PATH as string);
+export default new API(process.env.API_PATH as string)

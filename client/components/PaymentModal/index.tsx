@@ -13,12 +13,14 @@ const INITIAL_STATE: State = {
 }
 
 interface Props {
+  BTCEUR: number;
   chosenCoffee: string;
   closeModal: Function;
   isPaymentModalOpen: boolean;
   nodeInfo: any;
   paymentRequest: string;
   progress: number;
+  invoiceValue: number;
 }
 
 const QRCode = DefaultQRCode as React.ComponentClass<QRCodeProps & React.HTMLProps<SVGElement>>;
@@ -47,8 +49,8 @@ export default class PaymentModal extends React.Component<Props, State> {
                 <p>{this.props.chosenCoffee}</p>
               </Col>
               <Col xs={{ size: 6 }} className={'invoiceInfo-col2'}>
-                <p>607 Sats</p>
-                <p>1 btc = 8278,23 € (EUR)</p>
+                <p>{`${this.props.invoiceValue} Sats (0,50 EUR)`}</p>
+                <p>{`1 BTC = ${this.props.BTCEUR} € (EUR)`}</p>
               </Col>
             </Row>
             <Row noGutters={true}>
@@ -92,10 +94,11 @@ export default class PaymentModal extends React.Component<Props, State> {
                 <div>Node Info</div>
                 <div className={'qrcodeWrapper'}>
                   <QRCode
-                    value={`${this.props.nodeInfo.info.identityPubkey}@192.168.1.110:10001`}
+                    value={`${this.props.nodeInfo.info.identityPubkey}@85.246.228.114:10001`}
                     style={{ display: 'block', width: '100%', height: 'auto' }}
                   />
                 </div>
+                <p className={'nodeID'}><span>{'Node ID: '}</span>{`${this.props.nodeInfo.info.identityPubkey}@85.246.228.114:10001`}</p>
               </Col>
             </Row>
           </Container>

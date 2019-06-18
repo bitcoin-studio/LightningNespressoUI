@@ -2,11 +2,16 @@ import express from 'express'
 import expressWs from 'express-ws'
 import cors from 'cors'
 import bodyParser from 'body-parser'
-import {Invoice, GetInfoResponse, Readable, WalletBalanceResponse} from '@radar/lnrpc'
+import {Invoice, GetInfoResponse, Readable} from '@radar/lnrpc'
 import env from './env'
 import {node, initNode} from './node'
-// import { priceManager } from './priceManager';
 import manager from './manager'
+
+const globalAny: any = global
+globalAny.fetch = require('node-fetch')
+
+const cc = require('cryptocompare')
+//cc.setApiKey('<your-api-key>')
 
 // Configure server
 const app = expressWs(express()).app
@@ -19,7 +24,7 @@ app.ws('/api/coffees', (ws) => {
   // Send all the posts we have initially
   ws.send(JSON.stringify({
     type: 'hello',
-  }));
+  }))
 
   // Listen for Invoice Settlement
   const coffeeInvoiceSettledListener = (invoice: Invoice) => {
@@ -27,38 +32,39 @@ app.ws('/api/coffees', (ws) => {
     ws.send(JSON.stringify({
       type: 'invoice-settlement',
       data: invoice,
-    }));
+    }))
 
     // TODO
     // Call ESP8266 - Deliver coffee
 
-  };
-  manager.addListener('invoice-settlement', coffeeInvoiceSettledListener);
+  }
+  manager.addListener('invoice-settlement', coffeeInvoiceSettledListener)
 
   // Keep-alive by pinging every 10s
   const pingInterval = setInterval(() => {
-    ws.send(JSON.stringify({ type: 'ping' }));
-    }, 10000);
+    ws.send(JSON.stringify({type: 'ping'}))
+  }, 10000)
 
   // Stop listening if they close the connection
   ws.addEventListener('close', () => {
     console.log('Connection ws closed, stop listening')
-    manager.removeListener('coffee', coffeeInvoiceSettledListener);
-    clearInterval(pingInterval);
-  });
-});
+    manager.removeListener('coffee', coffeeInvoiceSettledListener)
+    clearInterval(pingInterval)
+  })
+})
 
 app.post('/api/generatePaymentRequest', async (req, res, next) => {
   try {
-    const {name} = req.body
+    const {name, value} = req.body
+    //console.log('name', name, 'value', value)
 
-    if (!name) {
-      throw new Error('Fields name and content are required')
+    if (!name || !value) {
+      throw new Error('Fields name and value are required')
     }
 
     const invoice = await node.addInvoice({
-      memo: name,
-      value: '10',
+      memo: `${name} - The Block`,
+      value: value,
       expiry: '300', // 5 minutes
     })
 
@@ -67,6 +73,19 @@ app.post('/api/generatePaymentRequest', async (req, res, next) => {
         paymentRequest: invoice.paymentRequest,
       },
     })
+  } catch (err) {
+    next(err)
+  }
+})
+
+app.get('/api/getPrice', async (req, res, next) => {
+  try {
+    // CryptoCompare API
+    cc.price('BTC', ['USD', 'EUR'])
+      .then(prices => {
+        return res.json({data: prices})
+      })
+      .catch(console.error)
   } catch (err) {
     next(err)
   }
@@ -98,26 +117,12 @@ initNode()
     const infoResponse: GetInfoResponse = await node.getInfo()
     console.log('Node info ', infoResponse)
 
-    //const balanceResponse: WalletBalanceResponse = await node.walletBalance();
-    //console.log('Confirmed Balance ', balanceResponse.confirmedBalance);
-
-    // Listen to events
-
-    /*
-       // Subscribe to LND server events
-    const subscriber = await node.subscribeInvoices();
-    subscriber.on('data', (invoice: Invoice) => {
-      console.log('Pouetttttt  ', invoice); // do something with invoice event
-    });
-    */
-
     // Subscribe to all invoices
     const stream = await node.subscribeInvoices() as any as Readable<Invoice>
     stream
       .on('data', (invoice: Invoice) => {
         // Skip unpaid / irrelevant invoice updates
         if (!invoice.settled || !invoice.amtPaidSat || !invoice.memo) return
-
         console.log(`Invoice - ${invoice.memo} - Paid!`)
         manager.handleInvoiceSettlement(invoice)
       })
