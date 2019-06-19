@@ -13,33 +13,58 @@ globalAny.fetch = require('node-fetch')
 const cc = require('cryptocompare')
 //cc.setApiKey('<your-api-key>')
 
+// Lock for coffeeInvoiceSettledListener callback to avoid being called twice
+let lock = true
+
 // Configure server
 const app = expressWs(express()).app
 app.use(cors({origin: '*'}))
 app.use(bodyParser.json())
 
-
 // API Routes
 app.ws('/api/coffees', (ws) => {
-  // Just say hello because you are polite
+  // Reply hello because you are polite
   ws.send(JSON.stringify({
     type: 'hello',
   }))
 
-  // Listen for Invoice Settlement
+  /**
+   * AddListener Function for 'invoice-settlement' event
+   * Listen for Invoice Settlement
+   */
   const coffeeInvoiceSettledListener = (invoice: Invoice) => {
-    // Send event to client
-    ws.send(JSON.stringify({
-      type: 'invoice-settlement',
-      data: invoice,
-    }))
+    if (lock) {
+      // Send settled invoice to client
+      ws.send(JSON.stringify({
+        type: 'invoice-settlement',
+        data: invoice,
+      }))
 
-    // TODO
-    // Call ESP8266 - Deliver coffee
-    console.log('Deliver coffee')
-
+      // Call ESP8266 - Deliver coffee
+      let id = invoice.memo.charAt(1)
+      let dispenserIP = 'https://ptsv2.com/t/0zwyc-1560957547/post'
+      console.log(`Deliver coffee row ${id}`)
+      const body = { coffee: id };
+      globalAny.fetch(dispenserIP, {
+        method: 'post',
+        body:    JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      })
+      //.then(res => console.log(res))
+      //.then(res => res.json())
+      //.then(json => console.log(json));
+    }
   }
-  manager.addListener('invoice-settlement', coffeeInvoiceSettledListener)
+
+  // Listener
+  manager.addListener('invoice-settlement', (invoice) => {
+    coffeeInvoiceSettledListener(invoice)
+    lock = false
+    // Reset to true after 500ms
+    setTimeout(() => {
+      lock = true;
+    }, 500)
+  })
 
   // Keep-alive by pinging every 10s
   const pingInterval = setInterval(() => {
@@ -56,15 +81,15 @@ app.ws('/api/coffees', (ws) => {
 
 app.post('/api/generatePaymentRequest', async (req, res, next) => {
   try {
-    const {name, value} = req.body
+    const {memo, value} = req.body
     //console.log('name', name, 'value', value)
 
-    if (!name || !value) {
-      throw new Error('Fields name and value are required')
+    if (!memo || !value) {
+      throw new Error('Fields "memo" and "value" are required to create an invoice')
     }
 
     const invoice = await node.addInvoice({
-      memo: `${name} - The Block`,
+      memo: memo,
       value: value,
       expiry: '300', // 5 minutes
     })
@@ -115,8 +140,8 @@ initNode()
     app.listen(env.PORT, () => console.log(`API Server started at http://localhost:${env.PORT}!`))
   })
   .then(async () => {
-    const infoResponse: GetInfoResponse = await node.getInfo()
-    console.log('Node info ', infoResponse)
+    const info: GetInfoResponse = await node.getInfo()
+    console.log('Node info ', info)
 
     // Subscribe to all invoices
     const stream = await node.subscribeInvoices() as any as Readable<Invoice>
