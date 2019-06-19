@@ -10,11 +10,11 @@ class API {
   }
 
   // Public methods
-  generatePaymentRequest(name: string, value: number) {
+  generatePaymentRequest(memo: string, value: number) {
     return this.request<{ paymentRequest: string; }>(
       'POST',
       '/generatePaymentRequest',
-      {name, value},
+      {memo, value},
     )
   }
 

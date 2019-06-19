@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import EventEmitter from 'events';
 //import {ICoffee} from '../client/types';
 import {Invoice} from '@radar/lnrpc'
 

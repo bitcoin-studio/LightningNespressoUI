@@ -8,7 +8,7 @@ interface Props {}
 
 interface State {
   BTCEUR: number;
-  chosenCoffee: string;
+  chosenCoffee: {id: number, name: string};
   data: ICoffee | null;
   error: Error | null;
   invoiceValue: number;
@@ -21,7 +21,7 @@ interface State {
 
 const INITIAL_STATE: State = {
   BTCEUR: null,
-  chosenCoffee: '',
+  chosenCoffee: {id: null, name: null},
   data: null,
   error: null,
   invoiceValue: null,
@@ -60,12 +60,12 @@ export default class Coffee extends React.Component<Props, State> {
   render() {
     let coffees = Object.keys(data)
       .map(key => data[Number(key)])
-      .map(item =>
+      .map((item, index) =>
         <div className={'coffee col-2'} key={item.name}>
           <img src={item.image} alt="image"/>
           <h2>{item.name}</h2>
           <p>{item.description}</p>
-          <button onClick={() => this.paymentModal(item.name)}>
+          <button onClick={() => this.paymentModal({id: index + 1, name: item.name})}>
             Buy for O.50€
           </button>
         </div>
@@ -88,16 +88,16 @@ export default class Coffee extends React.Component<Props, State> {
     )
   }
 
-  private generatePaymentRequest = async (chosenCoffee: string) => {
+  private generatePaymentRequest = async (chosenCoffee: {id: number, name: string}) => {
     try {
-      console.log('generatePaymentRequest')
+      console.log(`Generate invoice for ${chosenCoffee.name}, row ${chosenCoffee.id}`)
       let value;
       let prices = await api.getPrice();
       let BTCEUR = Number((prices.EUR).toFixed(0))
       this.setState({'BTCEUR': BTCEUR})
       console.log('prices EUR ', BTCEUR)
       value = Number(((1 * 0.50 / BTCEUR) * 10**8).toFixed(0))
-      console.log('value', value)
+      console.log('Invoice amount (sats) ', value)
 
       // If value > 20 000 sats, return
       if (value > 20000) {
@@ -107,7 +107,8 @@ export default class Coffee extends React.Component<Props, State> {
 
       this.setState({invoiceValue: value})
 
-      const res = await api.generatePaymentRequest(chosenCoffee, value)
+      let memo = `#${chosenCoffee.id} ${chosenCoffee.name} - The Block`
+      const res = await api.generatePaymentRequest(memo, value)
       this.setState({
         paymentRequest: res.paymentRequest
       })
@@ -118,7 +119,7 @@ export default class Coffee extends React.Component<Props, State> {
     }
   }
 
-  private paymentModal = async (chosenCoffee: string) => {
+  private paymentModal = async (chosenCoffee: {id: number, name: string}) => {
     await this.setState({chosenCoffee: chosenCoffee})
     await this.generatePaymentRequest(this.state.chosenCoffee)
     await this.setState({modal: true})
@@ -126,9 +127,11 @@ export default class Coffee extends React.Component<Props, State> {
   }
 
   private closeModal = async () => {
+    // Clear timer waiting bar
+    clearInterval(this.state.modalTimer)
+    console.log('Reset state')
     console.log('Close modal')
     this.setState({...INITIAL_STATE})
-    clearInterval(this.state.modalTimer)
   }
 
   private runProgressBar = async () => {

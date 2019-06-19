@@ -14,7 +14,7 @@ const INITIAL_STATE: State = {
 
 interface Props {
   BTCEUR: number;
-  chosenCoffee: string;
+  chosenCoffee: {id: number, name: string};
   closeModal: Function;
   isPaymentModalOpen: boolean;
   nodeInfo: any;
@@ -46,7 +46,7 @@ export default class PaymentModal extends React.Component<Props, State> {
             </Row>
             <Row noGutters={true} className={'invoiceInfo'}>
               <Col xs={{ size: 6 }} className={'invoiceInfo-col1'}>
-                <p>{this.props.chosenCoffee}</p>
+                <p>{this.props.chosenCoffee.name}</p>
               </Col>
               <Col xs={{ size: 6 }} className={'invoiceInfo-col2'}>
                 <p>{`${this.props.invoiceValue} Sats (0,50 EUR)`}</p>
