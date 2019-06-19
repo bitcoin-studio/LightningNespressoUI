@@ -1,4 +1,7 @@
 *.js
+!client/webpack.common.js
+!client/webpack.dev.js
+!client/webpack.prod.js
 *.map
 server/build
 

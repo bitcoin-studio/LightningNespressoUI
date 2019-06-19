@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "concurrently -n server,client \"npm run dev:server\" \"npm run dev:client\"",
-    "dev:client": "webpack-dev-server --config ./client/webpack.config.js",
-    "dev:server": "nodemon"
+    "dev:client": "webpack-dev-server --open --config ./client/webpack.dev.js",
+    "dev:server": "nodemon",
+    "build": "NODE_ENV=production webpack -p --config ./client/webpack.prod.js"
   },
   "author": "Bitcoin Studio, Stéphane Roche",
   "license": "ISC",
@@ -51,6 +52,7 @@
     "@types/reactstrap": "8.0.1",
     "concurrently": "4.1.0",
     "nodemon": "1.19.1",
-    "ts-node": "8.3.0"
+    "ts-node": "8.3.0",
+    "webpack-merge": "^4.2.1"
   }
 }

@@ -55,14 +55,12 @@ const plugins = [
 ];
 
 module.exports = {
-  mode: 'development',
   name: 'main',
   target: 'web',
-  devtool: 'cheap-module-inline-source-map',
   entry: path.join(clientDir, 'index.tsx'),
   output: {
     path: path.join(serverDir, 'public'),
-    filename: 'script.js',
+    filename: '[name].bundle.js',
     publicPath,
     chunkFilename: '[name].chunk.js',
   },
@@ -78,10 +76,5 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.mjs', '.json'],
     modules: [clientDir, path.join(__dirname, '../node_modules')],
-  },
-  devServer: {
-    port: 3000,
-    hot: true,
-    stats: 'minimal',
-  },
+  }
 };
