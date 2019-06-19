@@ -127,7 +127,7 @@ export default class Coffee extends React.Component<Props, State> {
 
   private closeModal = async () => {
     console.log('Close modal')
-    this.setState({modal: false})
+    this.setState({...INITIAL_STATE})
     clearInterval(this.state.modalTimer)
   }
 
@@ -139,9 +139,8 @@ export default class Coffee extends React.Component<Props, State> {
     this.setState({modalTimer: setInterval(() => {
         seconds = seconds + 5
         percentage = Number((seconds / 3).toFixed(0))
-        console.log('percentage', percentage)
         this.setState({progress: percentage})
-        console.log('this.state.progress', this.state.progress)
+        console.log(`Waiting bar ${this.state.progress} %`)
 
         if (this.state.progress >= 100) {
           clearInterval(this.state.modalTimer)
@@ -153,7 +152,7 @@ export default class Coffee extends React.Component<Props, State> {
 
   private getNodeInfo = async () => {
     const info = await api.getNodeInfo()
-    console.log('info----------------------', info)
+    console.log(info)
     this.setState({nodeInfo: info})
   }
 }

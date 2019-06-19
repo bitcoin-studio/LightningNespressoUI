@@ -90,7 +90,7 @@ export default class PaymentModal extends React.Component<Props, State> {
         <ModalBody>
           <Container>
             <Row noGutters={true}>
-              <Col xs={{ size: 6, offset: 3 }} className={'progressBar'}>
+              <Col xs={{ size: 6, offset: 3 }}>
                 <div>Node Info</div>
                 <div className={'qrcodeWrapper'}>
                   <QRCode
@@ -98,7 +98,16 @@ export default class PaymentModal extends React.Component<Props, State> {
                     style={{ display: 'block', width: '100%', height: 'auto' }}
                   />
                 </div>
+              </Col>
+            </Row >
+            <Row noGutters={true}>
+              <Col xs={{ size: 12 }}>
                 <p className={'nodeID'}><span>{'Node ID: '}</span>{`${this.props.nodeInfo.info.identityPubkey}@85.246.228.114:10001`}</p>
+              </Col>
+            </Row>
+            <Row noGutters={true}>
+              <Col xs={{ size: 12 }}>
+                <Button className={'nodeInfo btn'} outline color="info" onClick={() => this.setState({nodeInfoTab: false})}>Go Back to Invoice</Button>
               </Col>
             </Row>
           </Container>

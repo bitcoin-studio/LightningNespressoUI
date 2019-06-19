@@ -21,7 +21,7 @@ app.use(bodyParser.json())
 
 // API Routes
 app.ws('/api/coffees', (ws) => {
-  // Send all the posts we have initially
+  // Just say hello because you are polite
   ws.send(JSON.stringify({
     type: 'hello',
   }))
@@ -36,6 +36,7 @@ app.ws('/api/coffees', (ws) => {
 
     // TODO
     // Call ESP8266 - Deliver coffee
+    console.log('Deliver coffee')
 
   }
   manager.addListener('invoice-settlement', coffeeInvoiceSettledListener)
