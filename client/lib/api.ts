@@ -60,7 +60,7 @@ class API {
       query = `?${stringify(args as any)}`
     }
 
-    return fetch(path + query, {
+    return fetch(this.url + path + query, {
       method,
       headers,
       body,
