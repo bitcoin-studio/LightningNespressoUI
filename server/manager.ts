@@ -16,7 +16,6 @@ class Manager extends EventEmitter {
   }
 
   // Emit 'invoice-settlement' event
-  // used in server/index.ts
   handleInvoiceSettlement(invoice: Invoice) {
     this.emit('invoice-settlement', invoice)
   }
