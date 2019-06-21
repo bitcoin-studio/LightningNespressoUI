@@ -36,21 +36,21 @@ export default class Coffee extends React.Component<Props, State> {
   state = {...INITIAL_STATE}
 
   componentDidMount(): void {
-    this.setState({nodeInfo: this.getNodeInfo()})
-
-    // Listen for paid invoice, close modal
-    const socket = api.getCoffeesWebSocket();
-    socket.addEventListener('message', ev => {
-      try {
-        const msg = JSON.parse(ev.data.toString());
-        if (msg && msg.type === 'invoice-settlement') {
-          console.log('Invoice settled!', msg.data)
-          this.closeModal()
+    this.setState({nodeInfo: this.getNodeInfo()}, () => {
+      // Listen for paid invoice, close modal
+      const socket = api.getCoffeesWebSocket();
+      socket.addEventListener('message', ev => {
+        try {
+          const msg = JSON.parse(ev.data.toString());
+          if (msg && msg.type === 'invoice-settlement') {
+            console.log('Invoice settled!', msg.data)
+            this.closeModal()
+          }
+        } catch(err) {
+          console.error(err);
         }
-      } catch(err) {
-        console.error(err);
-      }
-    });
+      })
+    })
   }
 
   componentWillUnmount() {
