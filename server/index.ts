@@ -137,13 +137,9 @@ initNode()
   .then(() => {
     console.log('Lightning node initialized!')
     console.log('Starting server...')
-    console.log('process.env', process.env)
-    console.log('env', env)
-    if (process.env.NODE_ENV === 'production') {
-      app.listen(env.PORT, () => console.log(`API Server started at http://coffee.bitcoin-studio.com:${env.PORT}!`))
-    } else {
-      app.listen(env.PORT, () => console.log(`API Server started at http://localhost:${env.PORT}!`))
-    }
+    console.log('process.env----------', process.env)
+    console.log('env-----------', env)
+    app.listen(env.PORT, () => console.log(`API Server started at http://localhost:${env.PORT}!`))
   })
   .then(async () => {
     const info: GetInfoResponse = await node.getInfo()
