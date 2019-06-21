@@ -117,7 +117,7 @@ export default class PaymentModal extends React.Component<Props, State> {
 
     return (
       <div>
-        <Modal isOpen={this.props.isPaymentModalOpen} className={'paymentModal'}>
+        <Modal isOpen={this.props.isPaymentModalOpen} className={'paymentModal'} toggle={() => this.props.closeModal()}>
           <Row noGutters={true}>
             <Col xs={{ size: 2 }}>
               <img src={logo} alt="logo"/>
