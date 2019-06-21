@@ -59,7 +59,7 @@ module.exports = {
   target: 'web',
   entry: path.join(clientDir, 'index.tsx'),
   output: {
-    path: path.join(serverDir, 'public'),
+    path: path.join(clientDir, 'public'),
     filename: '[name].bundle.js',
     publicPath,
     chunkFilename: '[name].chunk.js',

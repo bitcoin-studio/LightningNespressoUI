@@ -7,7 +7,9 @@
     "dev": "concurrently -n server,client \"npm run dev:server\" \"npm run dev:client\"",
     "dev:client": "webpack-dev-server --open --config ./client/webpack.dev.js",
     "dev:server": "nodemon",
-    "build": "NODE_ENV=production webpack -p --progress --config ./client/webpack.prod.js --mode production"
+    "build": "npm run build-client && npm run build-server",
+    "build-client": "NODE_ENV=production webpack -p --progress --config ./client/webpack.prod.js --mode production",
+    "build-server": "cd server && tsc"
   },
   "author": "Bitcoin Studio, Stéphane Roche",
   "license": "ISC",
