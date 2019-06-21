@@ -33,7 +33,7 @@ const sassLoader = {
   ],
 };
 const fileLoader = {
-  test: /\.(png|jpg|woff|woff2|eot|ttf|svg)$/,
+  test: /\.(png|jpg|woff|woff2|eot|ttf|svg|ico)$/,
   use: [{
     loader: 'file-loader',
     options: {
@@ -51,6 +51,7 @@ const plugins = [
   new HtmlWebpackPlugin({
     template: `${clientDir}/index.html`,
     inject: true,
+    favicon: 'client/assets/favicon.ico'
   }),
 ];
 
