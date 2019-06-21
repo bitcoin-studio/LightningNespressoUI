@@ -2,8 +2,9 @@
 !client/webpack.common.js
 !client/webpack.dev.js
 !client/webpack.prod.js
-!server/public/main.bundle.js
 *.map
+
+client/public
 server/build
 
 
