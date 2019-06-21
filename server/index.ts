@@ -69,7 +69,7 @@ app.ws('/api/coffees', (ws) => {
   // Keep-alive by pinging every 10s
   const pingInterval = setInterval(() => {
     ws.send(JSON.stringify({type: 'ping'}))
-  }, 10000)
+  }, 5000)
 
   // Stop listening if they close the connection
   ws.addEventListener('close', () => {
