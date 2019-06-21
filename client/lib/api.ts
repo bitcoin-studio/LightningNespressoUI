@@ -50,7 +50,6 @@ class API {
     let query = ''
     const headers = new Headers()
     headers.append('Accept', 'application/json')
-    //headers.append('X-CoinAPI-Key', '73034021-0EBC-493D-8A00-E0F138111F41');
 
     if (method === 'POST' || method === 'PUT') {
       body = JSON.stringify(args)
