@@ -1,8 +1,4 @@
-import createLnRpc, {
-  GetInfoResponse,
-  LnRpc,
-  Invoice,
-  WalletBalanceResponse } from '@radar/lnrpc';
+import createLnRpc, { LnRpc } from '@radar/lnrpc';
 import env from './env';
 
 export let node: LnRpc;

@@ -1,87 +1,88 @@
 import React from 'react'
-import {Alert, Container, Row} from 'reactstrap'
+import {Alert, Button, Container, Row, Spinner} from 'reactstrap'
 import Coffees from 'components/Coffee'
 import './style.scss'
 import api from 'lib/api'
 
-interface Props {}
-
 interface State {
-  isConnecting: boolean;
+  BTCEUR: number;
+  chosenCoffee: {id: number, name: string};
   error: Error | null;
+  invoiceValue: number;
+  isConnecting: boolean;
+  nodeInfo: any;
+  modal: boolean;
+  modalTimer: any;
+  paymentRequest: string;
+  progress: number;
 }
 
-// Starting state, can be used for "resetting" as well
-const INITIAL_STATE: State = {
-  isConnecting: true,
-  error: null,
-};
+// Coffee invoice
+const INVOICE_STATE = {
+  BTCEUR: null, // price at invoice creation
+  chosenCoffee: {id: null, name: null},
+  invoiceValue: null,
+  modal: false,
+  modalTimer: null,
+  paymentRequest: '',
+  progress: 0
+}
 
-export default class App extends React.Component<Props, State> {
+const INITIAL_STATE: State = {
+  ...INVOICE_STATE,
+  error: null,
+  isConnecting: true,
+  nodeInfo: null,
+}
+
+
+export default class App extends React.Component<{}, State> {
   state: State = { ...INITIAL_STATE };
 
-  // Connect websocket immediately
-  componentDidMount() {
-    this.connect();
+  componentDidMount () {
+    // Connect websocket immediately
+    this.connect()
+    this.setState({nodeInfo: this.getNodeInfo()})
   }
 
-  // Reset our state, connect websocket, and update state on new data or error
-  private connect = () => {
-    console.log('Connect to websocket..')
-    this.setState({ ...INITIAL_STATE });
-    const socket = api.getCoffeesWebSocket();
-
-    // Mark isConnecting false once connected
-    socket.addEventListener('open', (ev) => {
-      // @ts-ignore
-      const {readyState} = ev.currentTarget
-      readyState ? console.log("readyState: ", readyState) : null;
-      this.setState({ isConnecting: false });
-      console.log('WS connected')
-    });
-
-
-    // Log every message
-    socket.addEventListener('message', ev => {
-      try {
-        // Do something with a specific event
-        //const msg = JSON.parse(ev.data.toString());
-        //if (msg && msg.type === 'invoice-settlement') {}
-
-        console.log(ev)
-      } catch(err) {
-        console.error(err);
-      }
-    })
-
-    // Handle closes and errors
-    socket.addEventListener('close', (ev) => {
-      console.log('close event --', ev)
-      this.setState({ error: new Error('Connection to server closed unexpectedly.') });
-    });
-    socket.addEventListener('error', (ev) => {
-      this.setState({ error: new Error('There was an error, see your console for more information.') });
-      console.error(ev);
-    });
+  componentWillUnmount() {
+    clearInterval(this.state.modalTimer)
   }
 
   render() {
-    const { error } = this.state;
+    const { error, isConnecting } = this.state;
 
     let content;
 
-    if (error) {
+    if (isConnecting) {
+      content = (
+        <div className="d-flex justify-content-center p-5">
+          <Spinner color="warning" style={{ width: '3rem', height: '3rem' }} />
+        </div>
+      );
+    } else if (error) {
       content = (
         <Alert color="danger">
           <h4 className="alert-heading">Something went wrong!</h4>
           <p>{error.message}</p>
+          <Button block outline color="danger" onClick={this.connect}>
+            Try to reconnect
+          </Button>
         </Alert>
       )
     } else {
       content = (
-        <>
-         <Coffees/>
-        </>
+         <Coffees
+           BTCEUR={this.state.BTCEUR}
+           chosenCoffee={this.state.chosenCoffee}
+           closeModal={this.closeModal}
+           invoiceValue={this.state.invoiceValue}
+           modal={this.state.modal}
+           nodeInfo={this.state.nodeInfo}
+           paymentModal={this.paymentModal}
+           paymentRequest={this.state.paymentRequest}
+           progress={this.state.progress}
+         />
       );
     }
 
@@ -95,5 +96,125 @@ export default class App extends React.Component<Props, State> {
         </Container>
       </div>
     )
+  }
+
+  // Do all the invoice cleanup
+  private closeModal = () => {
+    // Clear timer waiting bar
+    clearInterval(this.state.modalTimer)
+    console.log('Reset state')
+    console.log('Close modal')
+    this.setState({...INVOICE_STATE})
+  }
+
+  // Reset our state, connect websocket, and update state on new data or error
+  private connect = () => {
+    console.log('Reset state')
+    this.setState({ ...INITIAL_STATE });
+
+    console.log('Connect to websocket..')
+    const socket = api.getCoffeesWebSocket();
+    // Mark isConnecting false once connected
+    socket.addEventListener('open', (ev) => {
+      this.setState({ isConnecting: false });
+      // @ts-ignore
+      const {readyState} = ev.currentTarget
+      console.log('WS connected.', " readyState: ", readyState)
+    });
+
+    // Websocket messages
+    socket.addEventListener('message', ev => {
+      try {
+        // @ts-ignore
+        const {readyState} = ev.currentTarget
+        readyState === 1 ? null : console.log("readyState (App.tsx) ", readyState);
+        console.log(ev)
+
+        const msg = JSON.parse(ev.data.toString())
+        if (msg && msg.type === 'invoice-settlement') {
+          console.log('Invoice settled!', msg.data)
+          this.closeModal()
+        }
+
+      } catch(err) {
+        console.error(err);
+      }
+    })
+
+    // Handle closes and errors
+    socket.addEventListener('close', (ev) => {
+      console.log('close event --', ev)
+      this.setState({ error: new Error('Connection to server closed unexpectedly.') })
+      // @ts-ignore
+      const {readyState} = ev.currentTarget
+      readyState ? console.log("readyState: ", readyState) : null
+    });
+    socket.addEventListener('error', (ev) => {
+      this.setState({ error: new Error('There was an error, see your console for more information.') });
+      console.error(ev);
+    });
+  }
+
+  private generatePaymentRequest = async (chosenCoffee: {id: number, name: string}) => {
+    try {
+      console.log(`Generate invoice for ${chosenCoffee.name}, row ${chosenCoffee.id}`)
+      let value;
+      let prices = await api.getPrice();
+      let BTCEUR = Number((prices.EUR).toFixed(0))
+      this.setState({'BTCEUR': BTCEUR})
+      console.log('prices EUR ', BTCEUR)
+      value = Number(((1 * 0.50 / BTCEUR) * 10**8).toFixed(0))
+      console.log('Invoice amount (sats) ', value)
+
+      // If value > 20 000 sats, return
+      if (value > 20000) {
+        console.log('value greater than 20 000 sats!!', value)
+        return
+      }
+
+      this.setState({invoiceValue: value})
+
+      let memo = `#${chosenCoffee.id} ${chosenCoffee.name} - The Block`
+      const res = await api.generatePaymentRequest(memo, value)
+      this.setState({
+        paymentRequest: res.paymentRequest
+      })
+    } catch (err) {
+      this.setState({
+        error: err.message,
+      })
+    }
+  }
+
+  private getNodeInfo = async () => {
+    const info = await api.getNodeInfo()
+    console.log(info)
+    this.setState({nodeInfo: info})
+  }
+
+  private paymentModal = async (chosenCoffee: {id: number, name: string}) => {
+    await this.setState({chosenCoffee: chosenCoffee})
+    await this.generatePaymentRequest(this.state.chosenCoffee)
+    await this.setState({modal: true})
+    await this.runProgressBar()
+  }
+
+  private runProgressBar = async () => {
+    // Increase by 5 every 5 seconds
+    // 5 minutes = 300 seconds
+    let seconds = 0
+    let percentage = 0
+    this.setState({modalTimer: setInterval(() => {
+        seconds = seconds + 5
+        percentage = Number((seconds / 3).toFixed(0))
+        this.setState({progress: percentage})
+        console.log(`Waiting bar ${this.state.progress} %`)
+
+        if (this.state.progress >= 100) {
+          clearInterval(this.state.modalTimer)
+          this.setState({modal: false})
+          console.log('close modal')
+        }
+      }, 5000)})
   }
 }

@@ -34,16 +34,24 @@ app.ws('/api/coffees', (ws) => {
    */
   const coffeeInvoiceSettledListener = (invoice: Invoice) => {
     if (lock) {
-      // Send settled invoice to client
+      console.log('Invoice paid (server)')
+      // Notify client
+      console.log('readyState ', ws.readyState)
       ws.send(JSON.stringify({
         type: 'invoice-settlement',
         data: invoice,
-      }))
+      }), (error) => {
+        if (error) {
+          console.log('Error when sending "invoice-settlement" to client  ', error)
+        }
+      })
 
       // Call ESP8266 - Deliver coffee
       let id = invoice.memo.charAt(1)
       let dispenserIP = 'https://ptsv2.com/t/0zwyc-1560957547/post'
+
       console.log(`Deliver coffee row ${id}`)
+
       const body = { coffee: id };
       globalAny.fetch(dispenserIP, {
         method: 'post',
@@ -69,7 +77,7 @@ app.ws('/api/coffees', (ws) => {
   // Keep-alive by pinging every 10s
   const pingInterval = setInterval(() => {
     ws.send(JSON.stringify({type: 'ping'}))
-  }, 5000)
+  }, 10000)
 
   // Stop listening if they close the connection
   ws.addEventListener('close', () => {
@@ -90,7 +98,7 @@ app.post('/api/generatePaymentRequest', async (req, res, next) => {
 
     const invoice = await node.addInvoice({
       memo: memo,
-      value: value,
+      value: '1', // value,
       expiry: '300', // 5 minutes
     })
 

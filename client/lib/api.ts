@@ -36,7 +36,12 @@ class API {
 
   getCoffeesWebSocket() {
     let wsUrl = this.url.replace('https', 'wss').replace('http', 'ws')
-    return new WebSocket(`${wsUrl}/coffees`)
+    let ws: any;
+    if (ws) {
+      return ws
+    } else {
+      return new WebSocket(`${wsUrl}/coffees`)
+    }
   }
 
   // Internal fetch function. Makes a request to the server, and either returns
