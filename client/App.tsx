@@ -1,7 +1,7 @@
-import React from 'react';
-import { Container, Row, Alert, } from 'reactstrap';
-import Coffees from 'components/Coffee';
-import './style.scss';
+import React from 'react'
+import {Alert, Container, Row} from 'reactstrap'
+import Coffees from 'components/Coffee'
+import './style.scss'
 import api from 'lib/api'
 
 interface Props {}
@@ -32,7 +32,10 @@ export default class App extends React.Component<Props, State> {
     const socket = api.getCoffeesWebSocket();
 
     // Mark isConnecting false once connected
-    socket.addEventListener('open', () => {
+    socket.addEventListener('open', (ev) => {
+      // @ts-ignore
+      const {readyState} = ev.currentTarget
+      readyState ? console.log("readyState: ", readyState) : null;
       this.setState({ isConnecting: false });
       console.log('WS connected')
     });
@@ -52,7 +55,8 @@ export default class App extends React.Component<Props, State> {
     })
 
     // Handle closes and errors
-    socket.addEventListener('close', () => {
+    socket.addEventListener('close', (ev) => {
+      console.log('close event --', ev)
       this.setState({ error: new Error('Connection to server closed unexpectedly.') });
     });
     socket.addEventListener('error', (ev) => {
