@@ -62,17 +62,15 @@ app.ws('/api/coffees', (ws) => {
       //.then(res => res.json())
       //.then(json => console.log(json));
     }
-  }
-
-  // Listener
-  manager.addListener('invoice-settlement', (invoice) => {
-    coffeeInvoiceSettledListener(invoice)
     lock = false
     // Reset to true after 500ms
     setTimeout(() => {
       lock = true;
     }, 500)
-  })
+  }
+
+  // Listener
+  manager.addListener('invoice-settlement', coffeeInvoiceSettledListener)
 
   // Keep-alive by pinging every 10s
   const pingInterval = setInterval(() => {
@@ -82,7 +80,7 @@ app.ws('/api/coffees', (ws) => {
   // Stop listening if they close the connection
   ws.addEventListener('close', () => {
     console.log('Connection ws closed, stop listening')
-    manager.removeListener('coffee', coffeeInvoiceSettledListener)
+    manager.removeListener('invoice-settlement', coffeeInvoiceSettledListener)
     clearInterval(pingInterval)
   })
 })
