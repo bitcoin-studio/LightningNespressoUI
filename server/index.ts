@@ -48,12 +48,9 @@ app.ws('/api/coffees', (ws) => {
 
       // Call ESP8266 - Deliver coffee
       let id = invoice.memo.charAt(1)
-      let dispenserIP = 'https://ptsv2.com/t/0zwyc-1560957547/post'
-
       console.log(`Deliver coffee row ${id}`)
-
-      const body = { coffee: id };
-      globalAny.fetch(dispenserIP, {
+      const body = { coffee: id as string};
+      globalAny.fetch(env.VENDING_MACHINE, {
         method: 'post',
         body:    JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
