@@ -94,7 +94,7 @@ export default class PaymentModal extends React.Component<Props, State> {
                 <div>Node Info</div>
                 <div className={'qrcodeWrapper'}>
                   <QRCode
-                    value={`${this.props.nodeInfo ? this.props.nodeInfo.info.identityPubkey : ''}@85.246.228.114:10001`}
+                    value={`${this.props.nodeInfo ? this.props.nodeInfo.info.uris[0] : ''}`}
                     style={{ display: 'block', width: '100%', height: 'auto' }}
                   />
                 </div>
@@ -102,7 +102,7 @@ export default class PaymentModal extends React.Component<Props, State> {
             </Row >
             <Row noGutters={true}>
               <Col xs={{ size: 12 }}>
-                <p className={'nodeID'}><span>{'Node ID: '}</span>{`${this.props.nodeInfo ? this.props.nodeInfo.info.identityPubkey : ''}@85.246.228.114:10001`}</p>
+                <p className={'nodeID'}><span>{'Node ID: '}</span>{`${this.props.nodeInfo ? this.props.nodeInfo.info.uris[0] : ''}`}</p>
               </Col>
             </Row>
             <Row noGutters={true}>
