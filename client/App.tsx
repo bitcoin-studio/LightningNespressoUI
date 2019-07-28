@@ -89,9 +89,14 @@ export default class App extends React.Component<{}, State> {
     return (
       <div className="App">
         <Container>
-          <h1 className="App-title">CHOOSE YOUR COFFEE</h1>
+          <Row className="justify-content-center">
+            <h1 className="App-title">CHOOSE YOUR COFFEE</h1>
+          </Row>
           <Row className="justify-content-between">
               {content}
+          </Row>
+          <Row className="justify-content-center">
+            <p className={"footer"}>Made By <a href="https://www.bitcoin-studio.com" target={"_blank"}>Bitcoin Studio</a> With Love ❤️</p>
           </Row>
         </Container>
       </div>
