@@ -55,9 +55,19 @@ app.ws('/api/coffees', (ws) => {
         body:    JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       })
-      //.then(res => console.log(res))
-      //.then(res => res.json())
-      //.then(json => console.log(json));
+        .then(response => {
+          console.log('response', response)
+          if(response.ok){
+            response.json().then((data) => {
+              console.log(data)
+            })
+          }else{
+            throw Error(response.statusText)
+          }
+        })
+        .catch(error => {
+          console.log(error)
+        })
     }
     lock = false
     // Reset to true after 500ms
