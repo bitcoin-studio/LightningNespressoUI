@@ -14,7 +14,7 @@
   "author": "Bitcoin Studio, Stéphane Roche",
   "license": "ISC",
   "dependencies": {
-    "@radar/lnrpc": "0.6.0-beta.2",
+    "@radar/lnrpc": "^0.6.0-beta.3",
     "@types/qrcode.react": "^0.8.2",
     "body-parser": "1.19.0",
     "bootstrap": "4.3.1",
