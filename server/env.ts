@@ -1,5 +1,10 @@
 import dotenv from 'dotenv';
-dotenv.config();
+
+const result = dotenv.config({debug: true})
+if (result.error) {
+  throw result.error
+}
+console.log(result.parsed)
 
 const env = {
   PORT: process.env.PORT as string,
