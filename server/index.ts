@@ -142,6 +142,43 @@ app.get('/', (req, res) => {
 
 
 // Initialize node & server
+let lndInvoicesStream = null
+
+const openLndInvoicesStream = async function() {
+  if (lndInvoicesStream) {
+    console.log('Lnd invoices subscription stream already opened')
+  } else {
+    console.log('Opening lnd invoices subscription stream...')
+    // Subscribe to all invoices
+    lndInvoicesStream = await node.subscribeInvoices() as any as Readable<Invoice>
+    lndInvoicesStream
+      .on('data', (invoice: Invoice) => {
+        // Skip unpaid / irrelevant invoice updates
+        if (!invoice.settled || !invoice.amtPaidSat || !invoice.memo) return
+        console.log(`Invoice - ${invoice.memo} - Paid!`)
+        manager.handleInvoiceSettlement(invoice)
+      })
+      .on('status', (status) => {
+        console.log(`SubscribeInvoices status: ${JSON.stringify(status)}`)
+        if (status.code == 2 || status.code == 14) {
+          // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
+          console.log('Try opening stream again')
+          lndInvoicesStream = null
+          openLndInvoicesStream()
+        }
+      })
+      .on('error', (error) => {
+        console.log(`SubscribeInvoices error: ${error}`)
+      })
+      .on('end', () => {
+        console.log('SubscribeInvoices stream ended')
+        console.log('Try opening stream again')
+        lndInvoicesStream = null
+        openLndInvoicesStream()
+      })
+  }
+}
+
 console.log('Initializing Lightning node...')
 initNode()
   .then(() => {
@@ -152,22 +189,16 @@ initNode()
   .then(async () => {
     const info: GetInfoResponse = await node.getInfo()
     console.log('Node info ', info)
-
-    // Subscribe to all invoices
-    const stream = await node.subscribeInvoices() as any as Readable<Invoice>
-    stream
-      .on('data', (invoice: Invoice) => {
-        // Skip unpaid / irrelevant invoice updates
-        if (!invoice.settled || !invoice.amtPaidSat || !invoice.memo) return
-        console.log(`Invoice - ${invoice.memo} - Paid!`)
-        manager.handleInvoiceSettlement(invoice)
-      })
-      .on('status', (status: string) => {
-        console.debug(`invoice status: ${JSON.stringify(status)}`)
-      })
-      .on('error', async (error) => {
-        console.error(`invoice error: ${error}`)
-      })
+  })
+  .then(async () => {
+    // open lnd invoices stream on start
+    await openLndInvoicesStream()
+    // check every minute that lnd invoices stream is still opened
+    setInterval(function() {
+      if (!lndInvoicesStream) {
+        openLndInvoicesStream()
+      }
+    }, 60 * 1000)
   })
   .catch((err) => {
     console.log(err)
