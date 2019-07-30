@@ -1,5 +1,7 @@
 import dotenv from 'dotenv';
-dotenv.config();
+
+const result = dotenv.config()
+if (result.error) throw result.error
 
 const env = {
   PORT: process.env.PORT as string,
