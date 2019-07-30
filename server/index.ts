@@ -56,11 +56,8 @@ app.ws('/api/coffees', (ws) => {
         headers: { 'Content-Type': 'application/json' },
       })
         .then(response => {
-          console.log('response', response)
           if(response.ok){
-            response.json().then((data) => {
-              console.log(data)
-            })
+            console.log('Request to vending machine sent')
           }else{
             throw Error(response.statusText)
           }
