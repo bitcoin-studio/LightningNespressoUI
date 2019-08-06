@@ -92,7 +92,6 @@ app.ws('/api/coffees', (ws) => {
 app.post('/api/generatePaymentRequest', async (req, res, next) => {
   try {
     const {memo, value} = req.body
-    //console.log('name', name, 'value', value)
 
     if (!memo || !value) {
       throw new Error('Fields "memo" and "value" are required to create an invoice')
@@ -160,15 +159,13 @@ const openLndInvoicesStream = async function() {
       })
       .on('status', (status) => {
         console.log(`SubscribeInvoices status: ${JSON.stringify(status)}`)
-        if (status.code == 2 || status.code == 14) {
-          // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
-          console.log('Try opening stream again')
-          lndInvoicesStream = null
-          openLndInvoicesStream()
-        }
+        // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
       })
       .on('error', (error) => {
         console.log(`SubscribeInvoices error: ${error}`)
+        console.log('Try opening stream again')
+        lndInvoicesStream = null
+        openLndInvoicesStream()
       })
       .on('end', () => {
         console.log('SubscribeInvoices stream ended')
