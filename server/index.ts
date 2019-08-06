@@ -154,7 +154,7 @@ const openLndInvoicesStream = async function() {
       .on('data', (invoice: Invoice) => {
         // Skip unpaid / irrelevant invoice updates
         // Memo should start with '#'
-        if (!invoice.settled || !invoice.amtPaidSat || !invoice.memo || !(invoice.memo.charAt(0) === '#')) return
+        if (!invoice.settled || !invoice.amtPaidSat || !invoice.memo || invoice.memo.charAt(0) !== '#') return
         console.log(`Invoice - ${invoice.memo} - Paid!`)
         manager.handleInvoiceSettlement(invoice)
       })
