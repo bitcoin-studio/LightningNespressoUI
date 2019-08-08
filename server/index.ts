@@ -99,7 +99,7 @@ app.post('/api/generatePaymentRequest', async (req, res, next) => {
 
     const invoice = await node.addInvoice({
       memo: memo,
-      value: value,
+      value: env.TESTING === 'true' ? '1' : value,
       expiry: '300', // 5 minutes
     })
 
