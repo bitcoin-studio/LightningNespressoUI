@@ -1,7 +1,7 @@
 {
-  "name": "pos_fundroid",
+  "name": "lightning-nespresso-ui",
   "version": "1.0.0",
-  "description": "Nespresso Capsule Dispenser - UI",
+  "description": "This repository is part of a Do-It-Yourself vending machine project which connects to a Bitcoin point of sales terminal.\\nSelect your coffee, pay with Bitcoin (via Lightning Network), and the vending machine will deliver your Nespresso capsule.",
   "main": "index.js",
   "scripts": {
     "dev": "concurrently -n server,client \"npm run dev:server\" \"npm run dev:client\"",
@@ -11,8 +11,12 @@
     "build-client": "NODE_ENV=production webpack -p --progress --config ./client/webpack.prod.js --mode production",
     "build-server": "cd server && tsc"
   },
-  "author": "Bitcoin Studio, Stéphane Roche",
-  "license": "ISC",
+  "author": {
+    "name": "Stephane Roche",
+    "email": "bitcoin-studio@protonmail.com",
+    "url": "https://bitcoin-studio.com"
+  },
+  "license": "MIT",
   "dependencies": {
     "@radar/lnrpc": "^0.6.0-beta.3",
     "@types/qrcode.react": "^0.8.2",
@@ -39,7 +43,6 @@
     "style-loader": "0.23.1",
     "ts-loader": "6.0.2",
     "typescript": "3.5.2",
-    "underscore": "^1.9.1",
     "webpack": "4.34.0",
     "webpack-cli": "3.3.4",
     "webpack-dev-server": "3.7.1"
