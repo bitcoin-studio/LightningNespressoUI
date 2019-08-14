@@ -3,6 +3,8 @@ import {Alert, Button, Container, Row, Spinner} from 'reactstrap'
 import Coffees from 'components/Coffee'
 import './style.scss'
 import api from 'lib/api'
+// @ts-ignore
+import LiveStreamYouTube from './assets/LiveStreamYouTube.png';
 
 interface State {
   BTCEUR: number;
@@ -91,6 +93,9 @@ export default class App extends React.Component<{}, State> {
         <Container>
           <Row className="justify-content-center">
             <h1 className="App-title">CHOOSE YOUR COFFEE</h1>
+            <a href={'https://www.youtube.com/channel/UCvFqGJdZWhi3frJeygy4GMw/live'} target={'_blank'}>
+              <img id={'LiveStreamYouTube'} src={LiveStreamYouTube} alt="LiveStream YouTube image"/>
+            </a>
           </Row>
           <Row className="justify-content-between">
               {content}
@@ -132,7 +137,7 @@ export default class App extends React.Component<{}, State> {
       try {
         // @ts-ignore
         const {readyState} = ev.currentTarget
-        readyState === 1 ? null : console.log("readyState (App.tsx) ", readyState);
+        readyState === 1 ? null : console.log("readyState (App.tsx) ", readyState)
         console.log(ev)
 
         const msg = JSON.parse(ev.data.toString())
