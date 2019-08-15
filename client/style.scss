@@ -13,6 +13,12 @@
   img#LiveStreamYouTube {
     height: 80px;
     margin: 17px 0px 30px 80px;
+
+    @media screen and (max-width: 768px) {
+      & {
+        margin: -15px 0 15px 0;
+      }
+    }
   }
 }
 
