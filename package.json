@@ -1,7 +1,7 @@
 {
   "name": "lightning-nespresso-ui",
   "version": "1.0.0",
-  "description": "This repository is part of a Do-It-Yourself vending machine project which connects to a Bitcoin point of sales terminal.\\nSelect your coffee, pay with Bitcoin (via Lightning Network), and the vending machine will deliver your Nespresso capsule.",
+  "description": "This repository is part of a vending machine project which connects to a Bitcoin point of sales terminal.\\nSelect your coffee, pay with Bitcoin (via Lightning Network), and the vending machine will deliver your Nespresso capsule.",
   "main": "index.js",
   "scripts": {
     "dev": "concurrently -n server,client \"npm run dev:server\" \"npm run dev:client\"",
@@ -18,7 +18,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@radar/lnrpc": "^0.6.0-beta.3",
+    "@radar/lnrpc": "^0.7.1-beta",
     "@types/qrcode.react": "^0.8.2",
     "body-parser": "1.19.0",
     "bootstrap": "4.3.1",
