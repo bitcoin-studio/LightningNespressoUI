@@ -9,9 +9,9 @@
   {
     "id": 2,
     "price": 0.05,
-    "name": "Fortissio Lungo",
-    "description": "An intense body and aroma in this blend was only possible with the presence of an Indian coffee bean, the Arabica Malabar grain of the Monção",
-    "image": "https://www.nespresso.com/ecom/medias/sys_master/public/10386856902686/C-0014-2000x2000.png"
+    "name": "Vivalto Lungo",
+    "description": "A balanced coffee made from a complex blend of separately roasted South American and East African Arabicas, combining roasted and subtle floral notes",
+    "image": "https://www.nespresso.com/ecom/medias/sys_master/public/10386858082334/C-0038-2000x2000.png"
   },
   {
     "id": 3,
@@ -30,8 +30,8 @@
   {
     "id": 5,
     "price": 0.05,
-    "name": "Caramelito Variation",
-    "description": "The sweet caramel aroma softens the crisp notes of the Grand Cru Livanto",
-    "image": "https://www.nespresso.com/ecom/medias/sys_master/public/10386858770462/C-0066-2000x2000.png"
+    "name": "Volluto Decaffeinato",
+    "description": "Delightfully sweet and smooth, the selected pure Arabica beans from South America are roasted to reveal the sweet biscuity, fresh and fruity notes",
+    "image": "https://www.nespresso.com/ecom/medias/sys_master/public/12566074916894/volluto-decaf-2000x2000.png"
   }
 ]
