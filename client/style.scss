@@ -12,14 +12,9 @@
   font-family: Gabriela, serif;
 
   img#LiveStreamYouTube {
+    display: block;
     height: 80px;
-    margin: 17px 0px 30px 80px;
-
-    @media screen and (max-width: 768px) {
-      & {
-        margin: -15px 0 15px 0;
-      }
-    }
+    margin: -15px auto 30px auto;
   }
 }
 
@@ -30,124 +25,181 @@ h1 {
   font-size: 3rem;
 }
 
-.coffee {
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 0.25rem;
-  word-wrap: break-word;
-  padding: 10px;
-  height: 350px;
-  margin: 0 auto;
-
-  img {
-    width: 85%;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+#cardContainer {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin: 0 5%;
+  @media screen and (max-width: 415px) {
+    & {
+      margin: 0;
+    }
   }
-
-  h2 {
-    margin-top: 10px;
-
-    @media screen and (max-width: 576px) {
-      & {
-        font-size: 0.55rem;
-      }
+  @media screen and (max-width: 576px) {
+    & {
+      grid-column-gap: 1%;
     }
-    @media screen and (min-width: 576px) and (max-width: 768px) {
-      & {
-        font-size: 0.7rem;
-      }
-    }
-    @media screen and (min-width: 768px) and (max-width: 992px) {
-      & {
-        font-size: 0.8rem;
-      }
-    }
-    @media screen and (min-width: 992px) and (max-width: 1200px) {
-      & {
-        font-size: 0.9rem;
-      }
-    }
-    @media screen and (min-width: 1200px) {
-      & {
-        font-size: 1rem;
-      }
+  }
+  @media screen and (min-width: 576px) {
+    & {
+      grid-column-gap: 2%;
     }
   }
 
-  p {
-    @media screen and (max-width: 576px) {
-      & {
-        font-size: 0.4rem;
-      }
-    }
-    @media screen and (min-width: 576px) and (max-width: 768px) {
-      & {
-        font-size: 0.5rem;
-      }
-    }
-    @media screen and (min-width: 768px) and (max-width: 992px) {
-      & {
-        font-size: 0.6rem;
-      }
-    }
-    @media screen and (min-width: 992px) and (max-width: 1200px) {
-      & {
-        font-size: 0.68rem;
-      }
-    }
-    @media screen and (min-width: 1200px) {
-      & {
-        font-size: 0.7rem;
-      }
-    }
-  }
-
-  button {
-    background-color: #329f80;
-    bottom: 10px;
-    border: 1px solid transparent;
+  .coffee {
+    border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 0.25rem;
-    color: #fff;
-    font-family: Gabriela, serif;
-    left: 10%;
-    line-height: 1.5;
-    position: absolute;
-    padding: 0.375rem 0.75rem;
-    width: 80%;
-
+    display: grid;
+    grid-template-rows: auto 35px 1fr 30px 30px;
+    word-wrap: break-word;
     @media screen and (max-width: 576px) {
       & {
-        font-size: 0.6rem;
+        padding: 5%;
       }
     }
-    @media screen and (min-width: 576px) and (max-width: 768px) {
+    @media screen and (min-width: 576px) {
       & {
-        font-size: 0.7rem;
+        padding: 10%;
       }
     }
-    @media screen and (min-width: 768px) and (max-width: 992px) {
-      & {
-        font-size: 0.7rem;
+
+    img {
+      width: 85%;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    h2 {
+      margin-top: 10px;
+
+      @media screen and (max-width: 576px) {
+        & {
+          font-size: 0.55rem;
+        }
+      }
+      @media screen and (min-width: 576px) and (max-width: 768px) {
+        & {
+          font-size: 0.7rem;
+        }
+      }
+      @media screen and (min-width: 768px) and (max-width: 992px) {
+        & {
+          font-size: 0.8rem;
+        }
+      }
+      @media screen and (min-width: 992px) and (max-width: 1200px) {
+        & {
+          font-size: 0.9rem;
+        }
+      }
+      @media screen and (min-width: 1200px) {
+        & {
+          font-size: 1rem;
+        }
       }
     }
-    @media screen and (min-width: 992px) and (max-width: 1200px) {
-      & {
-        font-size: 0.9rem;
+
+    p {
+      @media screen and (max-width: 576px) {
+        & {
+          font-size: 0.4rem;
+        }
+      }
+      @media screen and (min-width: 576px) and (max-width: 768px) {
+        & {
+          font-size: 0.5rem;
+        }
+      }
+      @media screen and (min-width: 768px) and (max-width: 992px) {
+        & {
+          font-size: 0.6rem;
+        }
+      }
+      @media screen and (min-width: 992px) and (max-width: 1200px) {
+        & {
+          font-size: 0.68rem;
+        }
+      }
+      @media screen and (min-width: 1200px) {
+        & {
+          font-size: 0.7rem;
+        }
       }
     }
-    @media screen and (min-width: 1200px) {
-      & {
-        font-size: 0.9rem;
+
+    button {
+      background-color: #329f80;
+      border: 1px solid transparent;
+      border-radius: 0.25rem;
+      color: #fff;
+      font-family: Gabriela, serif;
+      line-height: 1.5;
+
+      @media screen and (max-width: 576px) {
+        & {
+          font-size: 0.5rem;
+        }
+      }
+      @media screen and (min-width: 576px) and (max-width: 768px) {
+        & {
+          font-size: 0.55rem;
+        }
+      }
+      @media screen and (min-width: 768px) and (max-width: 992px) {
+        & {
+          font-size: 0.7rem;
+        }
+      }
+      @media screen and (min-width: 992px) and (max-width: 1200px) {
+        & {
+          font-size: 0.9rem;
+        }
+      }
+      @media screen and (min-width: 1200px) {
+        & {
+          font-size: 0.9rem;
+        }
+      }
+    }
+
+    /* Intensity level */
+    #intensityLevelContainer {
+      display: flex;
+
+      .intensitySquare {
+        border: solid 1px black;
+        margin: 1px;
+        width: 7%;
+
+        @media screen and (max-width: 576px) {
+          & {
+            height: 5px;
+          }
+        }
+        @media screen and (min-width: 576px) and (max-width: 768px) {
+          & {
+            height: 8px;
+          }
+        }
+        @media screen and (min-width: 768px) {
+          & {
+            height: 11px;
+          }
+        }
+      }
+
+      .intensitySquare-active {
+        background-color: black;
       }
     }
   }
 }
 
-.footer {
+#footer {
   font-family: Gabriela, serif;
   font-size: 1.3rem;
   margin-top: 2rem;
+  text-align: center;
 }
 
 .paymentModal {

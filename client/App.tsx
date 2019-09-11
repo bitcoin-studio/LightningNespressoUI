@@ -90,20 +90,20 @@ export default class App extends React.Component<{}, State> {
 
     return (
       <div className="App">
-        <Container>
-          <Row className="justify-content-center">
-            <h1 className="App-title">CHOOSE YOUR COFFEE</h1>
-            <a href={'https://www.youtube.com/channel/UCvFqGJdZWhi3frJeygy4GMw/live'} target={'_blank'}>
-              <img id={'LiveStreamYouTube'} src={LiveStreamYouTube} alt="LiveStream YouTube image"/>
-            </a>
-          </Row>
-          <Row className="justify-content-between">
-              {content}
-          </Row>
-          <Row className="justify-content-center">
-            <p className={"footer"}>Made By <a href="https://www.bitcoin-studio.com" target={"_blank"}>Bitcoin Studio</a> With Love ❤️</p>
-          </Row>
-        </Container>
+        <div id="header">
+          <h1 className="App-title">CHOOSE YOUR COFFEE</h1>
+          <a href={'https://www.youtube.com/channel/UCvFqGJdZWhi3frJeygy4GMw/live'} target={'_blank'}>
+            <img id={'LiveStreamYouTube'} src={LiveStreamYouTube} alt="LiveStream YouTube image"/>
+          </a>
+        </div>
+
+        <div id="cardContainer">
+            {content}
+        </div>
+
+        <div id="footer">
+          <p>Made By <a href="https://www.bitcoin-studio.com" target={"_blank"}>Bitcoin Studio</a> With Love ❤️</p>
+        </div>
       </div>
     )
   }
