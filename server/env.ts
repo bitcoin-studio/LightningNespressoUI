@@ -9,7 +9,8 @@ const env = {
   LND_MACAROON: process.env.LND_MACAROON as string,
   LND_TLS_CERT: process.env.LND_TLS_CERT as string,
   VENDING_MACHINE: process.env.VENDING_MACHINE as string,
-  TESTING: process.env.TESTING as string
+  TESTING: process.env.TESTING as string,
+  PRICE: process.env.PRICE as string
 };
 
 // Ensure all keys exist

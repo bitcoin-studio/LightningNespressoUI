@@ -34,7 +34,7 @@ export default class Coffee extends React.Component<Props, {}> {
           </div>
 
           <button onClick={() => this.props.paymentModal({id: index + 1, name: item.name})}>
-            Buy for O.50€
+            {`Buy for ${process.env.PRICE}€`}
           </button>
         </div>
       )

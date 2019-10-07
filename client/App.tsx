@@ -1,5 +1,5 @@
 import React from 'react'
-import {Alert, Button, Container, Row, Spinner} from 'reactstrap'
+import {Alert, Button, Spinner} from 'reactstrap'
 import Coffees from 'components/Coffee'
 import './style.scss'
 import api from 'lib/api'
@@ -172,8 +172,8 @@ export default class App extends React.Component<{}, State> {
       let prices = await api.getPrice();
       let BTCEUR = Number((prices.EUR).toFixed(0))
       this.setState({'BTCEUR': BTCEUR})
-      console.log('prices EUR ', BTCEUR)
-      value = Number(((1 * 0.50 / BTCEUR) * 10**8).toFixed(0))
+      console.log('price BTCEUR ', BTCEUR)
+      value = Number(((1 * Number(process.env.PRICE) / BTCEUR) * 10**8).toFixed(0))
       console.log('Invoice amount (sats) ', value)
 
       // If value > 20 000 sats, return

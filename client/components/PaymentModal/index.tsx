@@ -49,7 +49,7 @@ export default class PaymentModal extends React.Component<Props, State> {
                 <p>{this.props.chosenCoffee.name}</p>
               </Col>
               <Col xs={{ size: 6 }} className={'invoiceInfo-col2'}>
-                <p>{`${this.props.invoiceValue} Sats (0,50 EUR)`}</p>
+                <p>{`${this.props.invoiceValue} Sats (${process.env.PRICE} EUR)`}</p>
                 <p>{`1 BTC = ${this.props.BTCEUR} € (EUR)`}</p>
               </Col>
             </Row>

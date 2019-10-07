@@ -2,7 +2,7 @@ require('dotenv').config();
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const DotenvPlugin = require('dotenv-webpack');
+const Dotenv = require('dotenv-webpack');
 
 const clientDir = path.resolve(__dirname);
 const serverDir = path.resolve(__dirname, '../server');
@@ -46,7 +46,7 @@ const fileLoader = {
 // Plugins run additional functionality on our build
 const plugins = [
   // Adds our .env variables to the build
-  new DotenvPlugin({ systemvars: true }),
+  new Dotenv(),
   // Takes our index.html template, and injects our build into it
   new HtmlWebpackPlugin({
     template: `${clientDir}/index.html`,
