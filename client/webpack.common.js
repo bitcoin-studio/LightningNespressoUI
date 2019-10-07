@@ -4,6 +4,7 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 
+const rootDir = path.resolve(__dirname, '..');
 const clientDir = path.resolve(__dirname);
 const serverDir = path.resolve(__dirname, '../server');
 const publicPath = '/';
@@ -46,7 +47,7 @@ const fileLoader = {
 // Plugins run additional functionality on our build
 const plugins = [
   // Adds our .env variables to the build
-  new Dotenv(),
+  new Dotenv({path: `${rootDir}/.env`}),
   // Takes our index.html template, and injects our build into it
   new HtmlWebpackPlugin({
     template: `${clientDir}/index.html`,
