@@ -193,5 +193,5 @@ initNode()
     await openLndInvoicesStream()
   })
   .catch((err) => {
-    console.log(err)
+    console.log('catch err initNode', err)
   })
