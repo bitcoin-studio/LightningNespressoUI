@@ -131,7 +131,7 @@ app.get('/api/getNodeInfo', async (req, res, next) => {
   ;(async function getInfoFn() {
     try {
       const info = await node.getInfo()
-      res.json({data: {info}})
+      res.json({data: info})
     } catch (err) {
       retryCount++
       console.log(err.message)
