@@ -148,7 +148,7 @@ export default class App extends React.Component<{}, State> {
         // @ts-ignore
         const {readyState} = ev.currentTarget
         readyState === 1 ? null : console.log("readyState (App.tsx) ", readyState)
-        console.log(ev)
+        console.log('Websocket event: ', ev.data)
         const msg = JSON.parse(ev.data.toString())
         if (msg && msg.type === 'invoice-settlement') {
           console.log('Invoice settled!', msg.data)

@@ -35,6 +35,7 @@ app.ws('/api/coffees', (ws) => {
   const coffeeInvoiceSettledListener = (invoice: Invoice) => {
     if (lock) {
       console.log('Invoice paid (server)')
+
       // Notify client
       console.log('readyState ', ws.readyState)
       ws.send(JSON.stringify({
