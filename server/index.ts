@@ -127,12 +127,24 @@ app.get('/api/getPrice', async (req, res, next) => {
 })
 
 app.get('/api/getNodeInfo', async (req, res, next) => {
-  try {
-    const info = await node.getInfo()
-    res.json({data: {info}})
-  } catch (err) {
-    next(err)
-  }
+  let retryCount = 0
+  ;(async function getInfoFn() {
+    try {
+      const info = await node.getInfo()
+      res.json({data: {info}})
+    } catch (err) {
+      retryCount++
+      console.log(err.message)
+      console.log(`#${retryCount} - call getInfo again after ${500 * Math.pow(2, retryCount)}`)
+      const getInfoTimeout = setTimeout(getInfoFn, 500 * Math.pow(2, retryCount))
+
+      if (retryCount === 10) {
+        console.log('give up call getInfo')
+        clearTimeout(getInfoTimeout)
+        next(err)
+      }
+    }
+  })()
 })
 
 app.get('/', (req, res) => {
