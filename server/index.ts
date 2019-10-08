@@ -204,15 +204,6 @@ initNode()
     // open lnd invoices stream on start
     await openLndInvoicesStream()
   })
-  .then(async () => {
-    // check every minute that lnd invoices stream is still opened
-    setInterval(function() {
-      if (!lndInvoicesStream) {
-        console.log('Invoice stream was lost. Reconnection...')
-        openLndInvoicesStream()
-      }
-    }, 60 * 1000)
-  })
   .catch((err) => {
     console.log('catch err initNode', err)
   })
