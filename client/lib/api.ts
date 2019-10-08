@@ -34,6 +34,7 @@ class API {
     )
   }
 
+  // Establish websocket connection with server
   getCoffeesWebSocket() {
     let wsUrl = this.url.replace('https', 'wss').replace('http', 'ws')
     return new WebSocket(`${wsUrl}/coffees`)

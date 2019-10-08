@@ -154,12 +154,13 @@ app.get('/', (req, res) => {
 
 // Initialize node & server
 let lndInvoicesStream = null
+let retryOpenStream = 0
 
 const openLndInvoicesStream = async function() {
   if (lndInvoicesStream) {
     console.log('Lnd invoices subscription stream already opened')
   } else {
-    console.log('Opening lnd invoices subscription stream...')
+    console.log('Opening LND invoice stream...')
     // Subscribe to all invoices
     lndInvoicesStream = await node.subscribeInvoices() as any as Readable<Invoice>
     lndInvoicesStream
@@ -178,32 +179,40 @@ const openLndInvoicesStream = async function() {
         console.log(`SubscribeInvoices error: ${error}`)
         console.log('Try opening stream again')
         lndInvoicesStream = null
-        openLndInvoicesStream()
+        retryOpenStream++
+        console.log(`#${retryOpenStream} - call openLndInvoicesStream again after ${500 * Math.pow(2, retryOpenStream)}`)
+        const openLndInvoicesStreamTimeout = setTimeout(openLndInvoicesStream, 500 * Math.pow(2, retryOpenStream))
+
+        if (retryOpenStream === 15) {
+          console.log('give up call openLndInvoicesStream')
+          clearTimeout(openLndInvoicesStreamTimeout)
+          // Will crash the app
+          throw new Error(error)
+        }
       })
       .on('end', () => {
         console.log('SubscribeInvoices stream ended')
-        console.log('Try opening stream again')
+        console.log('Try opening LND invoice stream again...')
         lndInvoicesStream = null
         openLndInvoicesStream()
       })
   }
 }
 
-console.log('Initializing Lightning node...')
+console.log('Connecting to LND instance...')
 initNode()
-  .then(() => {
-    console.log('Lightning node initialized!')
-    console.log('Starting server...')
-    app.listen(env.PORT, () => console.log(`API Server started at http://localhost:${env.PORT}!`))
-  })
   .then(async () => {
+    console.log('Check connection to LND instance...')
     const info: GetInfoResponse = await node.getInfo()
     console.log('Node info ', info)
-  })
-  .then(async () => {
-    // open lnd invoices stream on start
+    console.log('Connected to LND instance!')
+
     await openLndInvoicesStream()
+    console.log('LND invoice stream opened successfully')
+
+    console.log('Starting server...')
+    await app.listen(env.PORT, () => console.log(`API Server started at http://localhost:${env.PORT}!`))
   })
   .catch((err) => {
-    console.log('catch err initNode', err)
+    console.log('Node initialization failed ', err)
   })

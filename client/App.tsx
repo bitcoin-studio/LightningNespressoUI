@@ -42,9 +42,17 @@ export default class App extends React.Component<{}, State> {
   state: State = { ...INITIAL_STATE };
 
   componentDidMount () {
-    // Connect websocket immediately
+    // Establish websocket connection
     this.connect()
-    this.setState({nodeInfo: this.getNodeInfo()})
+      .then(async () => {
+        console.log('Ask server LND node info...')
+        const info = await api.getNodeInfo()
+        console.log('LND node info ', info)
+        this.setState({nodeInfo: info})
+      })
+      .catch(err => {
+        console.log(err)
+      })
   }
 
   componentWillUnmount() {
@@ -118,51 +126,52 @@ export default class App extends React.Component<{}, State> {
   }
 
   // Reset our state, connect websocket, and update state on new data or error
-  private connect = () => {
+  private connect = async () => {
     console.log('Reset state')
-    this.setState({ ...INITIAL_STATE });
+    this.setState({ ...INITIAL_STATE })
 
-    console.log('Connect to websocket..')
-    const socket = api.getCoffeesWebSocket();
-    // Mark isConnecting false once connected
+    console.log('Establish websocket connection with server...')
+    const socket = await api.getCoffeesWebSocket()
+
     socket.addEventListener('open', (ev) => {
       this.setState({ isConnecting: false });
       // @ts-ignore
       const {readyState} = ev.currentTarget
-      console.log('WS connected.', " readyState: ", readyState)
-    });
+      console.log('Websocket connected to server successfully')
+      console.log('readyState: ', readyState)
+    })
 
-    // Websocket messages
+    // Log all websocket messages
+    // Handle 'invoice-settlement' message
     socket.addEventListener('message', ev => {
       try {
         // @ts-ignore
         const {readyState} = ev.currentTarget
         readyState === 1 ? null : console.log("readyState (App.tsx) ", readyState)
         console.log(ev)
-
         const msg = JSON.parse(ev.data.toString())
         if (msg && msg.type === 'invoice-settlement') {
           console.log('Invoice settled!', msg.data)
           this.closeModal()
         }
-
       } catch(err) {
-        console.error(err);
+        console.error(err)
       }
     })
 
-    // Handle closes and errors
     socket.addEventListener('close', (ev) => {
-      console.log('close event --', ev)
+      console.log('Websocket close event ', ev)
       this.setState({ error: new Error('Connection to server closed unexpectedly.') })
       // @ts-ignore
       const {readyState} = ev.currentTarget
       readyState ? console.log("readyState: ", readyState) : null
-    });
+    })
+
     socket.addEventListener('error', (ev) => {
       this.setState({ error: new Error('There was an error, see your console for more information.') });
-      console.error(ev);
-    });
+      console.log('Websocket connection error')
+      console.error(ev)
+    })
   }
 
   private generatePaymentRequest = async (chosenCoffee: {id: number, name: string}) => {
@@ -194,12 +203,6 @@ export default class App extends React.Component<{}, State> {
         error: err.message,
       })
     }
-  }
-
-  private getNodeInfo = async () => {
-    const info = await api.getNodeInfo()
-    console.log(info)
-    this.setState({nodeInfo: info})
   }
 
   private paymentModal = async (chosenCoffee: {id: number, name: string}) => {
