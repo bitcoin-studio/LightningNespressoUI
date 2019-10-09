@@ -16,7 +16,7 @@ app.use(cors({origin: '*'}))
 app.use(bodyParser.json())
 
 // Push invoice to client
-const notifyClientPaidInvoice = function (invoice, ws) {
+const notifyClientPaidInvoice = async function (invoice, ws) {
   console.log('Notify client')
   console.log('readyState ', ws.readyState)
   ws.send(JSON.stringify({
@@ -30,7 +30,7 @@ const notifyClientPaidInvoice = function (invoice, ws) {
 }
 
 // Call ESP8266 - Deliver coffee
-const deliverCoffee = function (invoice) {
+const deliverCoffee = async function (invoice) {
   let id = invoice.memo.charAt(1)
   console.log(`Deliver coffee on rail ${id}`)
   const body = { coffee: id as string};
@@ -58,16 +58,16 @@ app.ws('/api/coffees', (ws) => {
 
   // AddListener for 'invoice-settlement' event
   // Notify client and deliver coffee
-  const coffeeInvoiceSettledListener = (invoice: Invoice) => {
+  const coffeeInvoiceSettledListener = async (invoice: Invoice) => {
     if (lock) {
-      notifyClientPaidInvoice(invoice, ws)
-      deliverCoffee(invoice)
+      await notifyClientPaidInvoice(invoice, ws)
+      await deliverCoffee(invoice)
     }
     lock = false
-    // Reset to true after 250ms
+    // Reset to true after 500ms
     setTimeout(() => {
       lock = true;
-    }, 250)
+    }, 500)
   }
   // Add listener
   manager.addListener('invoice-settlement', coffeeInvoiceSettledListener)
