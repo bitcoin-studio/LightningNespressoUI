@@ -6,81 +6,78 @@ import {Invoice, GetInfoResponse, Readable} from '@radar/lnrpc'
 import env from './env'
 import {node, initNode} from './node'
 import manager from './manager'
-
 const globalAny: any = global
 globalAny.fetch = require('node-fetch')
-
 const cc = require('cryptocompare')
-//cc.setApiKey('<your-api-key>')
-
-// Lock for coffeeInvoiceSettledListener callback to avoid being called twice
-let lock = true
 
 // Configure server
 const app = expressWs(express()).app
 app.use(cors({origin: '*'}))
 app.use(bodyParser.json())
 
-// API Routes
-app.ws('/api/coffees', (ws) => {
-  // Reply hello because you are polite
+// Push invoice to client
+const notifyClientPaidInvoice = function (invoice, ws) {
+  console.log('Notify client')
+  console.log('readyState ', ws.readyState)
   ws.send(JSON.stringify({
-    type: 'hello',
-  }))
+    type: 'invoice-settlement',
+    data: invoice,
+  }), (error) => {
+    if (error) {
+      console.log('Error when sending "invoice-settlement" to client  ', error)
+    }
+  })
+}
 
-  /**
-   * AddListener Function for 'invoice-settlement' event
-   * Listen for Invoice Settlement
-   */
+// Call ESP8266 - Deliver coffee
+const deliverCoffee = function (invoice) {
+  let id = invoice.memo.charAt(1)
+  console.log(`Deliver coffee on rail ${id}`)
+  const body = { coffee: id as string};
+  globalAny.fetch(env.VENDING_MACHINE, {
+    method: 'post',
+    body:    JSON.stringify(body),
+    headers: { 'Content-Type': 'application/json' },
+  })
+    .then(response => {
+      if(response.ok){
+        console.log('Request to vending machine sent')
+      }else{
+        throw Error(response.statusText)
+      }
+    })
+    .catch(error => {
+      console.log(error)
+    })
+}
+
+// Websocket route
+app.ws('/api/coffees', (ws) => {
+  // Lock to avoid being called twice
+  let lock = true
+
+  // AddListener for 'invoice-settlement' event
+  // Notify client and deliver coffee
   const coffeeInvoiceSettledListener = (invoice: Invoice) => {
     if (lock) {
-      console.log('Notify client')
-      console.log('readyState ', ws.readyState)
-      ws.send(JSON.stringify({
-        type: 'invoice-settlement',
-        data: invoice,
-      }), (error) => {
-        if (error) {
-          console.log('Error when sending "invoice-settlement" to client  ', error)
-        }
-      })
-
-      // Call ESP8266 - Deliver coffee
-      let id = invoice.memo.charAt(1)
-      console.log(`Deliver coffee on rail ${id}`)
-      const body = { coffee: id as string};
-      globalAny.fetch(env.VENDING_MACHINE, {
-        method: 'post',
-        body:    JSON.stringify(body),
-        headers: { 'Content-Type': 'application/json' },
-      })
-        .then(response => {
-          if(response.ok){
-            console.log('Request to vending machine sent')
-          }else{
-            throw Error(response.statusText)
-          }
-        })
-        .catch(error => {
-          console.log(error)
-        })
+      notifyClientPaidInvoice(invoice, ws)
+      deliverCoffee(invoice)
     }
     lock = false
-    // Reset to true after 500ms
+    // Reset to true after 250ms
     setTimeout(() => {
       lock = true;
-    }, 500)
+    }, 250)
   }
-
-  // Listener
+  // Add listener
   manager.addListener('invoice-settlement', coffeeInvoiceSettledListener)
 
-  // Keep-alive by pinging every 10s
+  // Keep-alive by pinging every 20s
   const pingInterval = setInterval(() => {
     ws.send(JSON.stringify({type: 'ping'}))
-  }, 10000)
+  }, 20000)
 
-  // Stop listening if they close the connection
+  // Stop listening if client close the connection
   ws.addEventListener('close', () => {
     console.log('Connection ws closed, stop listening')
     manager.removeListener('invoice-settlement', coffeeInvoiceSettledListener)
@@ -166,6 +163,7 @@ const openLndInvoicesStream = async function() {
         // Skip unpaid / irrelevant invoice updates
         // Memo should start with '#'
         if (!invoice.settled || !invoice.amtPaidSat || !invoice.memo || invoice.memo.charAt(0) !== '#') return
+        // Handle paid invoice
         console.log(`Invoice - ${invoice.memo} - Paid!`)
         manager.handleInvoiceSettlement(invoice)
       })
