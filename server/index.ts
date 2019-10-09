@@ -58,8 +58,6 @@ const deliverCoffee = async function (invoice) {
 app.ws('/api/coffees', (ws) => {
   // Handle invoice settlement
   const invoiceSettlementListener = async (invoice: Invoice) => {
-    console.log('Try to enter lock...')
-    console.log('Enter lock')
     await notifyClientPaidInvoice(invoice, ws)
     await deliverCoffee(invoice)
   }
