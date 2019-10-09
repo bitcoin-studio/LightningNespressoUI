@@ -63,7 +63,8 @@ app.ws('/api/coffees', (ws) => {
   }
 
   if (manager.listenerCount('invoice-settlement') === 0) {
-    // Register to invoice-settlement event (EventEmitter)
+    // Register handler to invoice-settlement event (EventEmitter)
+    console.log('Register handler to invoice-settlement event')
     manager.addListener('invoice-settlement', invoiceSettlementListener)
   }
 
