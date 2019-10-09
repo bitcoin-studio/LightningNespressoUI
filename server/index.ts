@@ -197,12 +197,13 @@ const openLndInvoicesStream = async function() {
         lndInvoicesStream = null
         openLndInvoicesStream()
       })
+    console.log('LND invoice stream opened successfully')
   }
 }
 
 // General server initialization
+let retryInit = 0
 const init = function () {
-  let retryInit = 0
   console.log('Connecting to LND instance...')
   initNode()
     .then(async () => {
@@ -212,10 +213,13 @@ const init = function () {
       console.log('Connected to LND instance!')
 
       await openLndInvoicesStream()
-      console.log('LND invoice stream opened successfully')
 
       console.log('Starting server...')
       await app.listen(env.PORT, () => console.log(`API Server started at http://localhost:${env.PORT}!`))
+    })
+    .then(() => {
+      // Reset counter
+      retryInit = 0
     })
     .catch((err) => {
       console.log('Server initialization failed ', err)
@@ -223,7 +227,7 @@ const init = function () {
       retryInit++
       console.log(`#${retryInit} - call init() again after ${500 * Math.pow(2, retryInit)}`)
       const initTimeout = setTimeout(init, 500 * Math.pow(2, retryInit))
-      if (retryOpenStream === 15) {
+      if (retryInit === 15) {
         console.log('Give up server initialization')
         clearTimeout(initTimeout)
       }
