@@ -57,22 +57,17 @@ const deliverCoffee = async function (invoice) {
 // Websocket route
 app.ws('/api/coffees', (ws) => {
   // Handle invoice settlement
-  let lock = true   // Lock to avoid being called twice
   const invoiceSettlementListener = async (invoice: Invoice) => {
     console.log('Try to enter lock...')
-    if (lock) {
-      console.log('Enter lock')
-      await notifyClientPaidInvoice(invoice, ws)
-      await deliverCoffee(invoice)
-    }
-    lock = false
-    setTimeout(() => {
-      lock = true;
-    }, 3000)
+    console.log('Enter lock')
+    await notifyClientPaidInvoice(invoice, ws)
+    await deliverCoffee(invoice)
   }
 
-  // Register to invoice-settlement event (EventEmitter)
-  manager.addListener('invoice-settlement', invoiceSettlementListener)
+  if (manager.listenerCount('invoice-settlement') === 0) {
+    // Register to invoice-settlement event (EventEmitter)
+    manager.addListener('invoice-settlement', invoiceSettlementListener)
+  }
 
   // Keep-alive by pinging every 20s
   const pingInterval = setInterval(() => {
