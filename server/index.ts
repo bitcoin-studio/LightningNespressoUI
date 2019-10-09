@@ -10,7 +10,6 @@ const globalAny: any = global
 globalAny.fetch = require('node-fetch')
 const cc = require('cryptocompare')
 //
-let lndInvoicesStream = null
 let retryOpenInvoiceStream = 1
 let retryInit = 1
 
@@ -153,53 +152,48 @@ app.get('/', (req, res) => {
 
 
 const openLndInvoicesStream = async function() {
-  if (lndInvoicesStream) {
-    console.log('Lnd invoices subscription stream already opened')
-  } else {
-    console.log('Opening LND invoice stream...')
-    // SubscribeInvoices returns a uni-directional stream (server -> client) for notifying the client of newly added/settled invoices
-    lndInvoicesStream = await node.subscribeInvoices() as any as Readable<Invoice>
-    lndInvoicesStream
-      .on('data', (invoice: Invoice) => {
-        // Skip unpaid / irrelevant invoice updates
-        // Memo should start with '#'
-        if (!invoice.settled || !invoice.amtPaidSat || !invoice.memo || invoice.memo.charAt(0) !== '#') return
-        // Handle paid invoice
-        console.log(`Invoice - ${invoice.memo} - Paid!`)
-        manager.handleInvoiceSettlement(invoice)
-      })
-      .on('status', (status) => {
-        console.log(`SubscribeInvoices status: ${JSON.stringify(status)}`)
-        // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
-      })
-      .on('error', (error) => {
-        console.log(`SubscribeInvoices error: ${error}`)
-        console.log('Try opening stream again')
-        console.log(`#${retryOpenInvoiceStream} - call openLndInvoicesStream again after ${500 * Math.pow(2, retryOpenInvoiceStream)}`)
-        const openLndInvoicesStreamTimeout = setTimeout(async () => {
-          await openLndInvoicesStream()
-          const nodeInfo = await checkLnd()
-          if (nodeInfo instanceof Error) {
-            retryOpenInvoiceStream++
-            console.log('increment retryOpenInvoiceStream', retryOpenInvoiceStream)
-            lndInvoicesStream = null
-          } else {
-            console.log('Reset counter retryOpenInvoiceStream')
-            retryOpenInvoiceStream = 1
-          }
-        }, 500 * Math.pow(2, retryOpenInvoiceStream))
-
-        if (retryOpenInvoiceStream === 15) {
-          console.log('Give up call openLndInvoicesStream')
-          clearTimeout(openLndInvoicesStreamTimeout)
-          throw error
+  console.log('Opening LND invoice stream...')
+  // SubscribeInvoices returns a uni-directional stream (server -> client) for notifying the client of newly added/settled invoices
+  let lndInvoicesStream = await node.subscribeInvoices() as any as Readable<Invoice>
+  lndInvoicesStream
+    .on('data', (invoice: Invoice) => {
+      // Skip unpaid / irrelevant invoice updates
+      // Memo should start with '#'
+      if (!invoice.settled || !invoice.amtPaidSat || !invoice.memo || invoice.memo.charAt(0) !== '#') return
+      // Handle paid invoice
+      console.log(`Invoice - ${invoice.memo} - Paid!`)
+      manager.handleInvoiceSettlement(invoice)
+    })
+    .on('status', (status) => {
+      console.log(`SubscribeInvoices status: ${JSON.stringify(status)}`)
+      // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
+    })
+    .on('error', (error) => {
+      console.log(`SubscribeInvoices error: ${error}`)
+      console.log('Try opening stream again')
+      console.log(`#${retryOpenInvoiceStream} - call openLndInvoicesStream again after ${500 * Math.pow(2, retryOpenInvoiceStream)}`)
+      const openLndInvoicesStreamTimeout = setTimeout(async () => {
+        await openLndInvoicesStream()
+        const nodeInfo = await checkLnd()
+        if (nodeInfo instanceof Error) {
+          retryOpenInvoiceStream++
+          console.log('increment retryOpenInvoiceStream', retryOpenInvoiceStream)
+        } else {
+          console.log('Reset counter retryOpenInvoiceStream')
+          retryOpenInvoiceStream = 1
         }
-      })
-      .on('end', async () => {
-        // No more data to be consumed from lndInvoicesStream
-        console.log('No more data to be consumed from lndInvoicesStream')
-      })
-  }
+      }, 500 * Math.pow(2, retryOpenInvoiceStream))
+
+      if (retryOpenInvoiceStream === 15) {
+        console.log('Give up call openLndInvoicesStream')
+        clearTimeout(openLndInvoicesStreamTimeout)
+        throw error
+      }
+    })
+    .on('end', async () => {
+      // No more data to be consumed from lndInvoicesStream
+      console.log('No more data to be consumed from lndInvoicesStream')
+    })
 }
 
 // Check connection to LND instance or invoice stream
