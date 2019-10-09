@@ -151,7 +151,7 @@ app.get('/', (req, res) => {
 
 
 let lndInvoicesStream = null
-let retryOpenStream = 0
+let retryOpenStream = 1
 
 const openLndInvoicesStream = async function() {
   if (lndInvoicesStream) {
@@ -177,9 +177,12 @@ const openLndInvoicesStream = async function() {
         console.log(`SubscribeInvoices error: ${error}`)
         console.log('Try opening stream again')
         lndInvoicesStream = null
-        retryOpenStream++
         console.log(`#${retryOpenStream} - call openLndInvoicesStream again after ${500 * Math.pow(2, retryOpenStream)}`)
-        const openLndInvoicesStreamTimeout = setTimeout(openLndInvoicesStream, 500 * Math.pow(2, retryOpenStream))
+        const openLndInvoicesStreamTimeout = setTimeout(async () => {
+          await openLndInvoicesStream()
+          retryOpenStream++
+          console.log('increment retryOpenStream', retryOpenStream)
+        }, 500 * Math.pow(2, retryOpenStream))
 
         if (retryOpenStream === 15) {
           console.log('give up call openLndInvoicesStream')
