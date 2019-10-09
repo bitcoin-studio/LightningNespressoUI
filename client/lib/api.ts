@@ -19,7 +19,7 @@ class API {
   }
 
   getNodeInfo() {
-    return this.request<{ paymentRequest: string; }>(
+    return this.request<{ info: object; }>(
       'GET',
       '/getNodeInfo',
       {},

@@ -9,6 +9,10 @@ import manager from './manager'
 const globalAny: any = global
 globalAny.fetch = require('node-fetch')
 const cc = require('cryptocompare')
+//
+let lndInvoicesStream = null
+let retryOpenInvoiceStream = 1
+let retryInit = 1
 
 // Configure server
 const app = expressWs(express()).app
@@ -59,17 +63,16 @@ app.ws('/api/coffees', (ws) => {
   // AddListener for 'invoice-settlement' event
   // Notify client and deliver coffee
   const coffeeInvoiceSettledListener = async (invoice: Invoice) => {
-    console.log('Try to enter lock')
+    console.log('Try to enter lock...')
     if (lock) {
       console.log('Enter lock')
       await notifyClientPaidInvoice(invoice, ws)
       await deliverCoffee(invoice)
     }
     lock = false
-    // Reset to true after 500ms
     setTimeout(() => {
       lock = true;
-    }, 500)
+    }, 1000)
   }
   // Add listener
   manager.addListener('invoice-settlement', coffeeInvoiceSettledListener)
@@ -125,22 +128,21 @@ app.get('/api/getPrice', async (req, res, next) => {
 })
 
 app.get('/api/getNodeInfo', async (req, res, next) => {
-  let retryCount = 0
+  let retryCount = 1
   ;(async function getInfoFn() {
     try {
       const info = await node.getInfo()
       res.json({data: info})
     } catch (err) {
-      retryCount++
-      console.log(err.message)
+      console.log('Get node info error: ', err.message)
       console.log(`#${retryCount} - call getInfo again after ${500 * Math.pow(2, retryCount)}`)
       const getInfoTimeout = setTimeout(getInfoFn, 500 * Math.pow(2, retryCount))
-
-      if (retryCount === 10) {
-        console.log('give up call getInfo')
+      if (retryCount === 15) {
+        console.log('Give up call getInfo')
         clearTimeout(getInfoTimeout)
         next(err)
       }
+      retryCount++
     }
   })()
 })
@@ -150,15 +152,12 @@ app.get('/', (req, res) => {
 })
 
 
-let lndInvoicesStream = null
-let retryOpenStream = 1
-
 const openLndInvoicesStream = async function() {
   if (lndInvoicesStream) {
     console.log('Lnd invoices subscription stream already opened')
   } else {
     console.log('Opening LND invoice stream...')
-    // Subscribe to all invoices
+    // SubscribeInvoices returns a uni-directional stream (server -> client) for notifying the client of newly added/settled invoices
     lndInvoicesStream = await node.subscribeInvoices() as any as Readable<Invoice>
     lndInvoicesStream
       .on('data', (invoice: Invoice) => {
@@ -176,43 +175,59 @@ const openLndInvoicesStream = async function() {
       .on('error', (error) => {
         console.log(`SubscribeInvoices error: ${error}`)
         console.log('Try opening stream again')
-        lndInvoicesStream = null
-        console.log(`#${retryOpenStream} - call openLndInvoicesStream again after ${500 * Math.pow(2, retryOpenStream)}`)
+        console.log(`#${retryOpenInvoiceStream} - call openLndInvoicesStream again after ${500 * Math.pow(2, retryOpenInvoiceStream)}`)
         const openLndInvoicesStreamTimeout = setTimeout(async () => {
           await openLndInvoicesStream()
-          retryOpenStream++
-          console.log('increment retryOpenStream', retryOpenStream)
-        }, 500 * Math.pow(2, retryOpenStream))
+          const nodeInfo = await checkLnd()
+          if (nodeInfo instanceof Error) {
+            retryOpenInvoiceStream++
+            console.log('increment retryOpenInvoiceStream', retryOpenInvoiceStream)
+            lndInvoicesStream = null
+          } else {
+            console.log('Reset counter retryOpenInvoiceStream')
+            retryOpenInvoiceStream = 1
+          }
+        }, 500 * Math.pow(2, retryOpenInvoiceStream))
 
-        if (retryOpenStream === 15) {
-          console.log('give up call openLndInvoicesStream')
+        if (retryOpenInvoiceStream === 15) {
+          console.log('Give up call openLndInvoicesStream')
           clearTimeout(openLndInvoicesStreamTimeout)
-          // Will crash the app
-          throw new Error(error)
+          throw error
         }
       })
-      .on('end', () => {
-        console.log('SubscribeInvoices stream ended')
-        console.log('Try opening LND invoice stream again...')
-        lndInvoicesStream = null
-        openLndInvoicesStream()
+      .on('end', async () => {
+        // No more data to be consumed from lndInvoicesStream
+        console.log('No more data to be consumed from lndInvoicesStream')
       })
-    // reset counter
-    retryOpenStream = 0
-    console.log('LND invoice stream opened successfully')
+  }
+}
+
+// Check connection to LND instance or invoice stream
+const checkLnd = async function() {
+  console.log('Check connection to LND instance...')
+  // We check by calling getInfo()
+  try {
+    const info: GetInfoResponse = await node.getInfo()
+    return info
+  } catch (err) {
+    return err
   }
 }
 
 // General server initialization
-let retryInit = 0
 const init = function () {
   console.log('Connecting to LND instance...')
   initNode()
     .then(async () => {
-      console.log('Check connection to LND instance...')
-      const info: GetInfoResponse = await node.getInfo()
-      console.log('Node info ', info)
-      console.log('Connected to LND instance!')
+      const nodeInfo = await checkLnd()
+
+      if (nodeInfo instanceof Error) {
+        throw nodeInfo
+      } else {
+        console.log('Node info ', nodeInfo)
+        console.log('Connected to LND instance!')
+        console.log('LND invoice stream opened successfully')
+      }
 
       await openLndInvoicesStream()
 
@@ -221,18 +236,18 @@ const init = function () {
     })
     .then(() => {
       // Reset counter
-      retryInit = 0
+      retryInit = 1
     })
     .catch((err) => {
       console.log('Server initialization failed ', err)
       console.log('Try server initialization again...')
-      retryInit++
       console.log(`#${retryInit} - call init() again after ${500 * Math.pow(2, retryInit)}`)
       const initTimeout = setTimeout(init, 500 * Math.pow(2, retryInit))
       if (retryInit === 15) {
         console.log('Give up server initialization')
         clearTimeout(initTimeout)
       }
+      retryInit++
     })
 }
 init()
