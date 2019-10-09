@@ -35,8 +35,7 @@ app.ws('/api/coffees', (ws) => {
   const coffeeInvoiceSettledListener = (invoice: Invoice) => {
     if (lock) {
       console.log('Invoice paid (server)')
-
-      // Notify client
+      console.log('Notify client')
       console.log('readyState ', ws.readyState)
       ws.send(JSON.stringify({
         type: 'invoice-settlement',
@@ -153,7 +152,6 @@ app.get('/', (req, res) => {
 })
 
 
-// Initialize node & server
 let lndInvoicesStream = null
 let retryOpenStream = 0
 
@@ -197,6 +195,8 @@ const openLndInvoicesStream = async function() {
         lndInvoicesStream = null
         openLndInvoicesStream()
       })
+    // reset counter
+    retryOpenStream = 0
     console.log('LND invoice stream opened successfully')
   }
 }
