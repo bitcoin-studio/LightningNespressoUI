@@ -59,7 +59,9 @@ app.ws('/api/coffees', (ws) => {
   // AddListener for 'invoice-settlement' event
   // Notify client and deliver coffee
   const coffeeInvoiceSettledListener = async (invoice: Invoice) => {
+    console.log('Try to enter lock')
     if (lock) {
+      console.log('Enter lock')
       await notifyClientPaidInvoice(invoice, ws)
       await deliverCoffee(invoice)
     }
