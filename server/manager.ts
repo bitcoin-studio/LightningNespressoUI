@@ -8,6 +8,7 @@ class Manager extends EventEmitter {
 
   // Emit 'invoice-settlement' event
   handleInvoiceSettlement(invoice: Invoice) {
+    console.log('Emit invoice-settlement event')
     this.emit('invoice-settlement', invoice)
   }
 }
