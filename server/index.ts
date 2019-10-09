@@ -56,12 +56,9 @@ const deliverCoffee = async function (invoice) {
 
 // Websocket route
 app.ws('/api/coffees', (ws) => {
-  // Lock to avoid being called twice
-  let lock = true
-
-  // AddListener for 'invoice-settlement' event
-  // Notify client and deliver coffee
-  const coffeeInvoiceSettledListener = async (invoice: Invoice) => {
+  // Handle invoice settlement
+  let lock = true   // Lock to avoid being called twice
+  const invoiceSettlementListener = async (invoice: Invoice) => {
     console.log('Try to enter lock...')
     if (lock) {
       console.log('Enter lock')
@@ -73,18 +70,24 @@ app.ws('/api/coffees', (ws) => {
       lock = true;
     }, 1000)
   }
-  // Add listener
-  manager.addListener('invoice-settlement', coffeeInvoiceSettledListener)
+
+  // Register to invoice-settlement event (EventEmitter)
+  manager.addListener('invoice-settlement', invoiceSettlementListener)
 
   // Keep-alive by pinging every 20s
   const pingInterval = setInterval(() => {
     ws.send(JSON.stringify({type: 'ping'}))
   }, 20000)
 
+  ws.addEventListener('error', (err) => {
+    console.log('Websocket error', err)
+  })
   // Stop listening if client close the connection
   ws.addEventListener('close', () => {
-    console.log('Connection ws closed, stop listening')
-    manager.removeListener('invoice-settlement', coffeeInvoiceSettledListener)
+    console.log('Connection websocket closed by client')
+    console.log('Stop listening invoice-settlement eventEmitter')
+    manager.removeListener('invoice-settlement', invoiceSettlementListener)
+    console.log('Stop pinging client')
     clearInterval(pingInterval)
   })
 })
