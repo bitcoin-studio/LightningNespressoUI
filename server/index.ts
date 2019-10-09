@@ -68,7 +68,7 @@ app.ws('/api/coffees', (ws) => {
     lock = false
     setTimeout(() => {
       lock = true;
-    }, 1000)
+    }, 3000)
   }
 
   // Register to invoice-settlement event (EventEmitter)
