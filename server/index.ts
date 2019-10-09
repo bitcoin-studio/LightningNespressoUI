@@ -10,7 +10,7 @@ const globalAny: any = global
 globalAny.fetch = require('node-fetch')
 const cc = require('cryptocompare')
 //
-let retryOpenInvoiceStream = 1
+let retryCreateInvoiceStream = 1
 let retryInit = 1
 
 // Configure server
@@ -151,7 +151,7 @@ app.get('/', (req, res) => {
 })
 
 
-const openLndInvoicesStream = async function() {
+const createLndInvoiceStream = async function() {
   console.log('Opening LND invoice stream...')
   // SubscribeInvoices returns a uni-directional stream (server -> client) for notifying the client of newly added/settled invoices
   let lndInvoicesStream = await node.subscribeInvoices() as any as Readable<Invoice>
@@ -171,21 +171,21 @@ const openLndInvoicesStream = async function() {
     .on('error', (error) => {
       console.log(`SubscribeInvoices error: ${error}`)
       console.log('Try opening stream again')
-      console.log(`#${retryOpenInvoiceStream} - call openLndInvoicesStream again after ${500 * Math.pow(2, retryOpenInvoiceStream)}`)
+      console.log(`#${retryCreateInvoiceStream} - call createLndInvoiceStream again after ${500 * Math.pow(2, retryCreateInvoiceStream)}`)
       const openLndInvoicesStreamTimeout = setTimeout(async () => {
-        await openLndInvoicesStream()
+        await createLndInvoiceStream()
         const nodeInfo = await checkLnd()
         if (nodeInfo instanceof Error) {
-          retryOpenInvoiceStream++
-          console.log('increment retryOpenInvoiceStream', retryOpenInvoiceStream)
+          retryCreateInvoiceStream++
+          console.log('increment retryCreateInvoiceStream', retryCreateInvoiceStream)
         } else {
-          console.log('Reset counter retryOpenInvoiceStream')
-          retryOpenInvoiceStream = 1
+          console.log('Reset counter retryCreateInvoiceStream')
+          retryCreateInvoiceStream = 1
         }
-      }, 500 * Math.pow(2, retryOpenInvoiceStream))
+      }, 500 * Math.pow(2, retryCreateInvoiceStream))
 
-      if (retryOpenInvoiceStream === 15) {
-        console.log('Give up call openLndInvoicesStream')
+      if (retryCreateInvoiceStream === 15) {
+        console.log('Give up call createLndInvoiceStream')
         clearTimeout(openLndInvoicesStreamTimeout)
         throw error
       }
@@ -223,7 +223,7 @@ const init = function () {
         console.log('LND invoice stream opened successfully')
       }
 
-      await openLndInvoicesStream()
+      await createLndInvoiceStream()
 
       console.log('Starting server...')
       await app.listen(env.PORT, () => console.log(`API Server started at http://localhost:${env.PORT}!`))
