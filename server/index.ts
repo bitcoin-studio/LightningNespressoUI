@@ -76,11 +76,18 @@ app.ws('/api/coffees', (ws) => {
   ws.addEventListener('error', (err) => {
     console.log('Websocket error', err)
   })
-  // Stop listening if client close the connection
-  ws.addEventListener('close', () => {
-    console.log('Connection websocket closed by client')
+
+  ws.addEventListener('close', (e) => {
+    if (e.wasClean) {
+      console.log('Connection websocket closed by client')
+    } else {
+      console.log('Connection websocket closed abnormally')
+      console.log('Close code', e.code)
+    }
+
     console.log('Stop listening invoice-settlement eventEmitter')
     manager.removeListener('invoice-settlement', invoiceSettlementListener)
+
     console.log('Stop pinging client')
     clearInterval(pingInterval)
   })
