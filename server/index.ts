@@ -3,31 +3,39 @@ import expressWs from 'express-ws'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 import {Invoice, GetInfoResponse, Readable} from '@radar/lnrpc'
+import {randomBytes} from 'crypto'
 import env from './env'
 import {node, initNode} from './node'
-import manager from './manager'
 const globalAny: any = global
 globalAny.fetch = require('node-fetch')
 const cc = require('cryptocompare')
-//
+let wsConnections = []
 let retryCreateInvoiceStream = 1
 let retryInit = 1
 
 // Configure server
-const app = expressWs(express()).app
+const wsInstance = expressWs(express(), undefined, {wsOptions: {clientTracking: true}})
+const app = wsInstance.app
 app.use(cors({origin: '*'}))
 app.use(bodyParser.json())
 
 // Push invoice to client
-const notifyClientPaidInvoice = async function (invoice, ws) {
-  console.log('Notify client')
-  console.log('readyState ', ws.readyState)
-  ws.send(JSON.stringify({
-    type: 'invoice-settlement',
-    data: invoice,
-  }), (error) => {
-    if (error) {
-      console.log('Error when sending "invoice-settlement" to client  ', error)
+const notifyClientPaidInvoice = async function (invoice, clientIdFromInvoice) {
+  wsConnections.forEach((connection) => {
+    const id = Object.keys(connection)[0]
+
+    if (clientIdFromInvoice === id) {
+      console.log('Notify client', id)
+      console.log('Websocket readyState', connection[id].readyState)
+      connection[id].send(
+        JSON.stringify({
+          type: 'invoice-settlement',
+          data: invoice,
+        }), (error) => {
+          if (error) {
+            console.log('Error when sending "invoice-settlement" to client', error)
+          }
+        })
     }
   })
 }
@@ -55,42 +63,45 @@ const deliverCoffee = async function (invoice) {
 }
 
 // Websocket route
-app.ws('/api/coffees', (ws) => {
-  // Handle invoice settlement
-  const invoiceSettlementListener = async (invoice: Invoice) => {
-    await notifyClientPaidInvoice(invoice, ws)
-    await deliverCoffee(invoice)
-  }
+app.ws('/api/ws', (ws) => {
+  const clientId = randomBytes(2).toString('hex')
+  console.log('Websocket connection open')
+  console.log('Websocket client id', clientId)
 
-  if (manager.listenerCount('invoice-settlement') === 0) {
-    // Register handler to invoice-settlement event (EventEmitter)
-    console.log('Register handler to invoice-settlement event')
-    manager.addListener('invoice-settlement', invoiceSettlementListener)
-  }
+  // Send this key to client
+  ws.send(JSON.stringify({
+    data: clientId,
+    type: 'client-id'
+  }))
 
-  // Keep-alive by pinging every 20s
-  const pingInterval = setInterval(() => {
-    ws.send(JSON.stringify({type: 'ping'}))
-  }, 20000)
+  const pingInterval = setInterval(() => ws.ping(
+    "heartbeat",
+    false
+  ), 10000)
 
-  ws.addEventListener('error', (err) => {
-    console.log('Websocket error', err)
+  ws.on('pong', function heartbeat(pingData) {
+    if (pingData.toString() !== 'heartbeat') {
+      console.log('Websocket pong not received')
+    }
+  })
+
+  ws.addEventListener('error', (ErrorEvent) => {
+    console.log('Websocket error', ErrorEvent.error)
   })
 
   ws.addEventListener('close', (e) => {
     if (e.wasClean) {
-      console.log('Connection websocket closed by client')
+      console.log('Connection websocket closed normally')
     } else {
       console.log('Connection websocket closed abnormally')
       console.log('Close code', e.code)
     }
-
-    console.log('Stop listening invoice-settlement eventEmitter')
-    manager.removeListener('invoice-settlement', invoiceSettlementListener)
-
     console.log('Stop pinging client')
     clearInterval(pingInterval)
   })
+
+  // Store client connection
+  wsConnections.push({[clientId]: ws})
 })
 
 app.post('/api/generatePaymentRequest', async (req, res, next) => {
@@ -160,13 +171,16 @@ const createLndInvoiceStream = async function() {
   // SubscribeInvoices returns a uni-directional stream (server -> client) for notifying the client of newly added/settled invoices
   let lndInvoicesStream = await node.subscribeInvoices() as any as Readable<Invoice>
   lndInvoicesStream
-    .on('data', (invoice: Invoice) => {
+    .on('data', async (invoice: Invoice) => {
       // Skip unpaid / irrelevant invoice updates
       // Memo should start with '#'
       if (!invoice.settled || !invoice.amtPaidSat || !invoice.memo || invoice.memo.charAt(0) !== '#') return
-      // Handle paid invoice
-      console.log(`Invoice - ${invoice.memo} - Paid!`)
-      manager.handleInvoiceSettlement(invoice)
+
+      // Handle Invoice Settlement
+      console.log(`Invoice settled - ${invoice.memo}`)
+      const clientIdFromInvoice = invoice.memo.substr(invoice.memo.indexOf('@') + 1, 4)
+      await notifyClientPaidInvoice(invoice, clientIdFromInvoice)
+      await deliverCoffee(invoice)
     })
     .on('status', (status) => {
       console.log(`SubscribeInvoices status: ${JSON.stringify(status)}`)

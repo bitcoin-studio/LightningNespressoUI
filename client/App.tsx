@@ -9,6 +9,7 @@ import LiveStreamYouTube from './assets/LiveStreamYouTube.png';
 interface State {
   BTCEUR: number;
   chosenCoffee: {id: number, name: string};
+  clientId: string;
   error: Error | null;
   invoiceValue: number;
   isConnecting: boolean;
@@ -32,6 +33,7 @@ const INVOICE_STATE = {
 
 const INITIAL_STATE: State = {
   ...INVOICE_STATE,
+  clientId: null,
   error: null,
   isConnecting: true,
   nodeInfo: null,
@@ -131,7 +133,7 @@ export default class App extends React.Component<{}, State> {
     this.setState({ ...INITIAL_STATE })
 
     console.log('Establish websocket connection with server...')
-    const socket = await api.getCoffeesWebSocket()
+    const socket = await api.getWebSocket()
 
     socket.addEventListener('open', (ev) => {
       this.setState({ isConnecting: false });
@@ -141,21 +143,29 @@ export default class App extends React.Component<{}, State> {
       console.log('readyState: ', readyState)
     })
 
-    // Log all websocket messages
-    // Handle 'invoice-settlement' message
     socket.addEventListener('message', ev => {
       try {
         // @ts-ignore
         const {readyState} = ev.currentTarget
-        readyState === 1 ? null : console.log("readyState (App.tsx) ", readyState)
-        console.log('Websocket event: ', ev.data)
+        if (readyState !== 1) {
+          console.log('Websocket not ready. readyState', readyState)
+          return
+        }
         const msg = JSON.parse(ev.data.toString())
+
+        // Get client id
+        if (msg && msg.type === 'client-id') {
+          console.log('Client ID is', msg.data)
+          this.setState({clientId: msg.data})
+        }
+
+        // Invoice settlement
         if (msg && msg.type === 'invoice-settlement') {
           console.log('Invoice settled!', msg.data)
           this.closeModal()
         }
       } catch(err) {
-        console.error(err)
+        console.error('websocket onmessage catch', err)
       }
     })
 
@@ -170,7 +180,7 @@ export default class App extends React.Component<{}, State> {
     socket.addEventListener('error', (ev) => {
       this.setState({ error: new Error('There was an error, see your console for more information.') });
       console.log('Websocket connection error')
-      console.error(ev)
+      console.error('websocket onerror', ev)
     })
   }
 
@@ -182,7 +192,7 @@ export default class App extends React.Component<{}, State> {
       let BTCEUR = Number((prices.EUR).toFixed(0))
       this.setState({'BTCEUR': BTCEUR})
       console.log('price BTCEUR ', BTCEUR)
-      value = Number(((1 * Number(process.env.PRICE) / BTCEUR) * 10**8).toFixed(0))
+      value = Number(((Number(process.env.PRICE) / BTCEUR) * 10**8).toFixed(0))
       console.log('Invoice amount (sats) ', value)
 
       // If value > 20 000 sats, return
@@ -193,7 +203,7 @@ export default class App extends React.Component<{}, State> {
 
       this.setState({invoiceValue: value})
 
-      let memo = `#${chosenCoffee.id} ${chosenCoffee.name} - The Block`
+      let memo = `#${chosenCoffee.id} ${chosenCoffee.name} - The Block / @${this.state.clientId}`
       const res = await api.generatePaymentRequest(memo, value)
       this.setState({
         paymentRequest: res.paymentRequest
@@ -218,16 +228,16 @@ export default class App extends React.Component<{}, State> {
     let seconds = 0
     let percentage = 0
     this.setState({modalTimer: setInterval(() => {
-        seconds = seconds + 5
-        percentage = Number((seconds / 3).toFixed(0))
-        this.setState({progress: percentage})
-        console.log(`Waiting bar ${this.state.progress} %`)
+      seconds = seconds + 5
+      percentage = Number((seconds / 3).toFixed(0))
+      this.setState({progress: percentage})
+      console.log(`Waiting bar ${this.state.progress} %`)
 
-        if (this.state.progress >= 100) {
-          clearInterval(this.state.modalTimer)
-          this.setState({modal: false})
-          console.log('close modal')
-        }
-      }, 5000)})
+      if (this.state.progress >= 100) {
+        clearInterval(this.state.modalTimer)
+        this.setState({modal: false})
+        console.log('close modal')
+      }
+    }, 5000)})
   }
 }
