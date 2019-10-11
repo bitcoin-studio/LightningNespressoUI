@@ -4,7 +4,7 @@ import Coffees from 'components/Coffee'
 import './style.scss'
 import api from 'lib/api'
 // @ts-ignore
-import LiveStreamYouTube from './assets/LiveStreamYouTube.png';
+//import LiveStreamYouTube from './assets/LiveStreamYouTube.png';
 
 interface State {
   BTCEUR: number;
@@ -102,9 +102,11 @@ export default class App extends React.Component<{}, State> {
       <div className="App">
         <div id="header">
           <h1 className="App-title">CHOOSE YOUR COFFEE</h1>
+          {/*
           <a href={'https://www.youtube.com/channel/UCvFqGJdZWhi3frJeygy4GMw/live'} target={'_blank'}>
             <img id={'LiveStreamYouTube'} src={LiveStreamYouTube} alt="LiveStream YouTube image"/>
           </a>
+          */}
         </div>
 
         <div id="cardContainer">
