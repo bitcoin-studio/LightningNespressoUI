@@ -252,6 +252,10 @@ const init = function () {
       // Reset counter
       retryInit = 1
     })
+    .then(() => {
+      // Ping LND to keep stream open
+      setInterval(checkLnd, (1000 * 60 * 5))
+    })
     .catch((err) => {
       console.log('Server initialization failed ', err)
       console.log('Try server initialization again...')
