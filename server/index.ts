@@ -54,11 +54,13 @@ const deliverCoffee = async function (invoice) {
       if(response.ok){
         console.log('Request to vending machine sent')
       }else{
-        throw Error(response.statusText)
+        throw new Error(response.statusText)
       }
     })
     .catch(error => {
-      console.log(error)
+      console.log('Coffee delivering error', error)
+      console.log('Try delivery again...')
+      deliverCoffee(invoice)
     })
 }
 
