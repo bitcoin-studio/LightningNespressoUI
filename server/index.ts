@@ -93,9 +93,9 @@ app.ws('/api/ws', (ws) => {
 
   ws.addEventListener('close', (e) => {
     if (e.wasClean) {
-      console.log('Connection websocket closed normally')
+      console.log(`Connection websocket ${clientId} closed normally`)
     } else {
-      console.log('Connection websocket closed abnormally')
+      console.log(`Connection websocket ${clientId} closed abnormally`)
       console.log('Close code', e.code)
     }
     console.log('Stop pinging client')
