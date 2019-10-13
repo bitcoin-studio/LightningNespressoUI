@@ -254,7 +254,7 @@ const init = function () {
     })
     .then(() => {
       // Ping LND to keep stream open
-      setInterval(checkLnd, (1000 * 60 * 5))
+      setInterval(checkLnd, (1000 * 60 * 9))
     })
     .catch((err) => {
       console.log('Server initialization failed ', err)
