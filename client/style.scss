@@ -138,12 +138,12 @@ h1 {
       line-height: 1.5;
 
       &:focus {
-        animation: blink 1s;
+        animation: blink 2s;
         animation-iteration-count: 3;
-        border: #3db898 solid 1px;
+        border: #1e5d4c solid 2px;
         outline:0;
       }
-      @keyframes blink { 50% { border-color:#1e5d4c; }  }
+      @keyframes blink { 50% { border-color: #3cc3a4; }  }
 
       @media screen and (max-width: 576px) {
         & {
