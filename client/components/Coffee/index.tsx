@@ -38,7 +38,7 @@ export default class Coffee extends React.Component<Props, {}> {
             this.props.paymentModal({id: index + 1, name: item.name})
             // @ts-ignore
             document.activeElement.blur()
-          }, 500)}>
+          }, 1500)}>
             {`Buy for ${process.env.PRICE}€`}
           </button>
         </div>
