@@ -1,6 +1,7 @@
 import React from 'react'
 import data from '../../data.json'
 import PaymentModal from '../PaymentModal'
+import debounce from 'lodash.debounce'
 
 interface Props {
   BTCEUR: number;
@@ -33,7 +34,7 @@ export default class Coffee extends React.Component<Props, {}> {
             }
           </div>
 
-          <button onClick={() => this.props.paymentModal({id: index + 1, name: item.name})}>
+          <button onClick={debounce(() => this.props.paymentModal({id: index + 1, name: item.name}), 500)}>
             {`Buy for ${process.env.PRICE}€`}
           </button>
         </div>
