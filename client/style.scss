@@ -137,6 +137,11 @@ h1 {
       font-family: Gabriela, serif;
       line-height: 1.5;
 
+      &:focus {
+        border: #1e5d4c solid 1px;
+        outline:0;
+      }
+
       @media screen and (max-width: 576px) {
         & {
           font-size: 0.5rem;
