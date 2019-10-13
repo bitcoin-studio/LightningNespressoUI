@@ -33,7 +33,7 @@ const notifyClientPaidInvoice = async function (invoice, clientIdFromInvoice) {
           data: invoice,
         }), (error) => {
           if (error) {
-            console.log('Error when sending "invoice-settlement" to client', error)
+            console.log(`Error when sending "invoice-settlement" to client ${id}`, error)
           }
         })
     }
@@ -98,7 +98,7 @@ app.ws('/api/ws', (ws) => {
       console.log(`Connection websocket ${clientId} closed abnormally`)
       console.log('Close code', e.code)
     }
-    console.log('Stop pinging client')
+    console.log(`Stop pinging client ${clientId}`)
     clearInterval(pingInterval)
   })
 

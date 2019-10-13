@@ -1,4 +1,4 @@
-// This file contains TypeScript types used throught the project
+// This file contains TypeScript types used through the project
 
 export interface ICoffee {
   id: number;

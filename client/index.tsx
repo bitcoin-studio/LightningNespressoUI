@@ -4,10 +4,10 @@ import { render } from 'react-dom';
 import { hot } from 'react-hot-loader';
 import App from './App';
 
-if (process.env.NODE_ENV !== 'production') {
-  console.log('Looks like we are in development mode!');
-} else {
+if (process.env.NODE_ENV === 'production') {
   console.log('Looks like we are in production!');
+} else {
+  console.log('Looks like we are in development mode!');
 }
 
 const HotApp = hot(module)(() => (

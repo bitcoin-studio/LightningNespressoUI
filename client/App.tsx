@@ -167,7 +167,7 @@ export default class App extends React.Component<{}, State> {
           this.closeModal()
         }
       } catch(err) {
-        console.error('websocket onmessage catch', err)
+        console.error('Websocket onmessage catch', err)
       }
     })
 
