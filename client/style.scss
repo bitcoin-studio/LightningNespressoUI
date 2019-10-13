@@ -1,15 +1,55 @@
 @import url('https://fonts.googleapis.com/css?family=Gabriela&display=swap');
 @import url('https://fonts.googleapis.com/css?family=Acme&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Oxygen+Mono&display=swap');
+
+.monospace {
+  font-family: 'Oxygen Mono', monospace;
+  font-size: 0.7rem;
+  word-break: break-word;
+}
+
+/* Colors */
+$primary: #2d8c69;
+$secondary: #f1c40f;
+$tertiary: #212121;
 
 .App {
+  font-family: Gabriela, serif;
+  display: grid;
+  grid-template-rows: 150px auto auto;
+  min-height: 100vh;
+
   &-title {
     text-align: center;
-    margin-top: 1rem;
-    margin-bottom: 4rem;
-    color: #f1c40f;
-    text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    margin: 15px 20px 30px 20px;
+    color: $secondary;
+    text-shadow: 3px 3px 0 $tertiary, -1px -1px 0 $tertiary, 1px -1px 0 $tertiary, -1px 1px 0 $tertiary, 1px 1px 0 $tertiary;
   }
-  font-family: Gabriela, serif;
+
+  img#BitcoinStudioLogo {
+    position: absolute;
+    align-items: start;
+    top: 15px;
+    left: 15px;
+
+    @media screen and (max-width: 576px) {
+      & {
+        top: 5px;
+        left: 5px;
+        height: 25px;
+      }
+    }
+    @media screen and (min-width: 576px) and (max-width: 768px) {
+      & {
+        height: 50px;
+      }
+    }
+    @media screen and (min-width: 768px) {
+      & {
+        height: 70px;
+      }
+    }
+  }
 
   /*
   img#LiveStreamYouTube {
@@ -20,7 +60,7 @@
   */
 }
 
-h1, h2, h3 {
+h1, h2, h3, h4, h5, h6 {
   font-family: Acme, sans-serif;
 }
 h1 {
@@ -48,7 +88,7 @@ h1 {
   }
 
   .coffee {
-    border: 1px solid rgba(0, 0, 0, 0.2);
+    border: 1px solid lighten($tertiary, 60%);
     border-radius: 0.25rem;
     display: grid;
     grid-template-rows: auto 35px 1fr 30px 30px;
@@ -129,21 +169,25 @@ h1 {
       }
     }
 
-    button {
-      background-color: #329f80;
+    .buttonBuy {
+      background-color: $primary;
       border: 1px solid transparent;
-      border-radius: 0.25rem;
+      border-radius: 2px;
       color: #fff;
       font-family: Gabriela, serif;
       line-height: 1.5;
 
       &:focus {
         animation: blink 2s;
-        animation-iteration-count: 3;
-        border: #1e5d4c solid 2px;
         outline:0;
       }
-      @keyframes blink { 50% { border-color: #3cc3a4; }  }
+      @keyframes blink {
+        0% { border: darken($primary, 15%) solid 2px; }
+        25% { border: lighten($primary, 20%) solid 2px; }
+        50% { border: darken($primary, 15%) solid 2px; }
+        75% { border: lighten($primary, 20%) solid 2px; }
+        100% { border: darken($primary, 15%) solid 2px; }
+      }
 
       @media screen and (max-width: 576px) {
         & {
@@ -177,7 +221,7 @@ h1 {
       display: flex;
 
       .intensitySquare {
-        border: solid 1px black;
+        border: solid 1px $tertiary;
         margin: 1px;
         width: 7%;
 
@@ -199,7 +243,7 @@ h1 {
       }
 
       .intensitySquare-active {
-        background-color: black;
+        background-color: $tertiary;
       }
     }
   }
@@ -208,8 +252,28 @@ h1 {
 #footer {
   font-family: Gabriela, serif;
   font-size: 1.3rem;
-  margin-top: 2rem;
+  margin-bottom: 10px;
   text-align: center;
+  align-self: end;
+
+  a {
+    color: $primary;
+    &:hover {
+      color: darken($secondary, 10%);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    &:active, &:focus, &:visited {
+      border: none;
+      outline: 0;
+      text-decoration: none;
+      -moz-outline-style: none;
+    }
+  }
+
+  p {
+    margin-top: 30px;
+  }
 }
 
 .paymentModal {
@@ -226,6 +290,7 @@ h1 {
   }
 
   .progress {
+    background-color: lighten($primary, 35%);
     border-radius: 0;
     position: relative;
     top: -26px;
@@ -233,23 +298,42 @@ h1 {
     left: -31px;
   }
 
+  .progress-bar {
+    background-color: $primary;
+  }
+
   .qrcodeWrapper {
     padding: 10px;
     border: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
   }
 
   .btn {
+    border-radius: 0;
+    font-family: Acme, serif;
     width: 100%;
+    &:hover {
+      color: #fff;
+    }
+  }
+  .btn-outline-info {
+    color: $primary;
+    border-color: $primary;
+    &:hover {
+      border-color: $primary;
+      background-color: $primary;
+    }
+  }
+  .btn-outline-warning {
+    color: $secondary;
+    border-color: $secondary;
+    &:hover {
+      border-color: $secondary;
+      background-color: $secondary;
+    }
   }
 }
 
-.paymentRequestString, .nodeID {
-  span {
-    font-family: Acme, serif;
-  }
-  font-size: 0.6rem;
-  word-break: break-word;
-}
 
 .invoiceInfo {
   font-family: Gabriela, serif;
@@ -262,6 +346,7 @@ h1 {
     :first-child {
       font-size: 0.8rem;
       font-weight: bold;
+      font-family: Acme;
     }
     font-size: 0.65rem;
   }
@@ -271,5 +356,32 @@ h1 {
       font-size: 0.8rem;
     }
     font-size: 0.65rem;
+  }
+}
+
+.link, .link span {
+  background-color: lighten($secondary, 35%);
+  color: $tertiary;
+  font-size: 10px;
+  padding: 4px;
+
+  &:hover {
+    color: darken($primary, 20%);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  &:active, &:focus, &:visited {
+    border: none;
+    outline: 0;
+    text-decoration: none;
+    -moz-outline-style: none;
+  }
+}
+
+#copyIcon {
+  margin-left: 10px;
+  img {
+    width: 10px;
   }
 }

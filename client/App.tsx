@@ -5,6 +5,7 @@ import './style.scss'
 import api from 'lib/api'
 // @ts-ignore
 //import LiveStreamYouTube from './assets/LiveStreamYouTube.png';
+import BitcoinStudioLogo from './assets/bitcoin-studio-black-border.svg';
 
 interface State {
   BTCEUR: number;
@@ -101,6 +102,9 @@ export default class App extends React.Component<{}, State> {
     return (
       <div className="App">
         <div id="header">
+          <a href={'https://www.bitcoin-studio.com'} target={'_blank'}>
+            <img id={'BitcoinStudioLogo'} src={BitcoinStudioLogo} alt="Bitcoin Studio Logo"/>
+          </a>
           <h1 className="App-title">CHOOSE YOUR COFFEE</h1>
           {/*
           <a href={'https://www.youtube.com/channel/UCvFqGJdZWhi3frJeygy4GMw/live'} target={'_blank'}>

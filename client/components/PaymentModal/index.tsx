@@ -3,6 +3,8 @@ import { Button, Col, Container, Modal, ModalBody, Progress, Row } from 'reactst
 import DefaultQRCode, { QRCodeProps } from 'qrcode.react';
 // @ts-ignore
 import logo from '../../assets/cropped-tbc.png';
+// @ts-ignore
+import copy from '../../assets/copy.svg';
 
 interface State {
   nodeInfoTab: boolean;
@@ -31,6 +33,16 @@ const QRCode = DefaultQRCode as React.ComponentClass<QRCodeProps & React.HTMLPro
 export default class PaymentModal extends React.Component<Props, State> {
   state = {...INITIAL_STATE}
 
+  private setClipboard(text) {
+    navigator.clipboard.writeText(text)
+      .then(function() {
+        console.log('Invoice copied to clipboard')
+      }, function(err) {
+        console.log('Invoice not copied to clipboard')
+        console.log('err', err)
+      })
+  }
+
   render() {
     let modalBody;
 
@@ -40,7 +52,6 @@ export default class PaymentModal extends React.Component<Props, State> {
           <Container>
             <Row noGutters={true}>
               <Col xs={{size: 6, offset: 3}}>
-                <div>Node Info</div>
                 <div className={'qrcodeWrapper'}>
                   <QRCode
                     value={`${this.props.nodeInfo ? this.props.nodeInfo.uris[0] : ''}`}
@@ -51,14 +62,17 @@ export default class PaymentModal extends React.Component<Props, State> {
             </Row>
             <Row noGutters={true}>
               <Col xs={{size: 12}}>
-                <p className={'nodeID'}>
-                  <span>{'Node ID: '}</span>{`${this.props.nodeInfo ? this.props.nodeInfo.uris[0] : ''}`}</p>
+                <h6>{'Node ID'}</h6>
+                <p className={'monospace'}>
+                  {`${this.props.nodeInfo ? this.props.nodeInfo.uris[0] : ''}`}</p>
               </Col>
             </Row>
             <Row noGutters={true}>
               <Col xs={{size: 12}}>
                 <Button className={'nodeInfo btn'} outline color="info"
-                        onClick={() => this.setState({nodeInfoTab: false})}>Go Back to Invoice</Button>
+                        onClick={() => this.setState({nodeInfoTab: false})}>
+                  {'Go Back'}
+                </Button>
               </Col>
             </Row>
           </Container>
@@ -69,7 +83,7 @@ export default class PaymentModal extends React.Component<Props, State> {
         <ModalBody>
           <Container>
             <Row noGutters={true}>
-              <Col xs={{size: 12}} className={'progressBar'}>
+              <Col xs={{size: 12}} className={'progressBar monospace'}>
                 <Progress value={this.props.progress}>Awaiting Payment...</Progress>
               </Col>
             </Row>
@@ -94,21 +108,43 @@ export default class PaymentModal extends React.Component<Props, State> {
             </Row>
             <Row noGutters={true}>
               <Col xs={{size: 12}}>
-                <p className={'paymentRequestString'}>
-                  <span>{'BOLT 11 Invoice: '}</span>{this.props.paymentRequest}
+                <h6>{'BOLT 11 INVOICE'}</h6>
+                <p className={'monospace'}>
+                  {this.props.paymentRequest}
                 </p>
               </Col>
             </Row>
+
+            <Row noGutters={true}>
+              <a
+                className={'link monospace'}
+                href={`lightning:${this.props.paymentRequest}`}
+                id={"openWithWallet"}>
+                {'OPEN WITH YOUR WALLET'}
+              </a>
+              <a
+                className={'link monospace'}
+                id="copyIcon"
+                onClick={() => this.setClipboard(this.props.paymentRequest)}
+              >
+                <img src={copy} alt="copy icon"/>
+                <span>COPY</span>
+              </a>
+            </Row>
+
             <Row noGutters={true}>
               <Col xs={{size: 12}}>
-                <Button className={'cancelPayment btn'} outline color="warning" onClick={() => this.props.closeModal()}>Cancel
-                  Payment</Button>
+                <Button className={'cancelPayment btn acme'} outline color="warning" onClick={() => this.props.closeModal()}>
+                  {'Cancel Payment'}
+                </Button>
               </Col>
             </Row>
             <Row noGutters={true}>
               <Col xs={{size: 12}}>
-                <Button className={'nodeInfo btn'} outline color="info"
-                        onClick={() => this.setState({nodeInfoTab: true})}>The Block Node Info</Button>
+                <Button className={'nodeInfo btn acme'} outline color="info"
+                        onClick={() => this.setState({nodeInfoTab: true})}>
+                  {'Node Info'}
+                </Button>
               </Col>
             </Row>
           </Container>

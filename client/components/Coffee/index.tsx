@@ -34,11 +34,13 @@ export default class Coffee extends React.Component<Props, {}> {
             }
           </div>
 
-          <button onClick={debounce(() => {
-            this.props.paymentModal({id: index + 1, name: item.name})
-            // @ts-ignore
-            document.activeElement.blur()
-          }, 1500)}>
+          <button
+            className={'buttonBuy'}
+            onClick={debounce(() => {
+              this.props.paymentModal({id: index + 1, name: item.name})
+              // @ts-ignore
+              document.activeElement.blur()
+            }, 1500)}>
             {`Buy for ${process.env.PRICE}€`}
           </button>
         </div>
