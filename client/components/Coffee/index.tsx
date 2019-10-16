@@ -16,6 +16,24 @@ interface Props {
 }
 
 export default class Coffee extends React.Component<Props, {}> {
+  private _nodes: Map<any, any>
+
+  constructor(props) {
+    super(props)
+    this._nodes = new Map();
+  }
+
+  // ref has been necessary to force focus, because Firefox and Safari on Mac don't give focus to btn on click...
+  // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button#Clicking_and_focus#Clicking_and_focus
+  handleBtnClick = (ev, index, item) => {
+    const node = this._nodes.get(index)
+    node.focus()
+
+    debounce(() => {
+      this.props.paymentModal({id: index + 1, name: item.name})
+      node.blur()
+    }, 1500)()
+  }
 
   render() {
     let coffees = Object.keys(data)
@@ -36,11 +54,11 @@ export default class Coffee extends React.Component<Props, {}> {
 
           <button
             className={'buttonBuy'}
-            onClick={debounce(() => {
-              this.props.paymentModal({id: index + 1, name: item.name})
-              // @ts-ignore
-              document.activeElement.blur()
-            }, 1500)}>
+            tabIndex={index + 1}
+            key={`button_${index}`}
+            ref={c => this._nodes.set(index, c)}
+            type="button"
+            onClick={(ev) => this.handleBtnClick(ev, index, item)}>
             {`Buy for ${process.env.PRICE}€`}
           </button>
         </div>
