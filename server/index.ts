@@ -66,9 +66,8 @@ const deliverCoffee = async function (invoice) {
 
 // Websocket route
 app.ws('/api/ws', (ws) => {
-  const clientId = randomBytes(2).toString('hex')
-  console.log('Websocket connection open')
-  console.log('Websocket client id', clientId)
+  const clientId: string = randomBytes(2).toString('hex')
+  console.log(`New websocket connection open by client ${clientId}`)
 
   // Send this key to client
   ws.send(JSON.stringify({
@@ -100,10 +99,18 @@ app.ws('/api/ws', (ws) => {
     }
     console.log(`Stop pinging client ${clientId}`)
     clearInterval(pingInterval)
+
+    // Remove closed ws
+    wsConnections = wsConnections.filter(function(wsConnection){
+      // Check if wsConnection is the one clientId is closing, return all the others
+      return Object.keys(wsConnection)[0] !== clientId
+    })
   })
 
   // Store client connection
   wsConnections.push({[clientId]: ws})
+  console.log(`There ${wsConnections.length === 1 ? 'is' : 'are'} ${wsConnections.length} websocket ` +
+    `connection${wsConnections.length === 1 ? '' : 's'} currently`)
 })
 
 app.post('/api/generatePaymentRequest', async (req, res, next) => {
