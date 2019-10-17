@@ -1,7 +1,6 @@
 import React from 'react'
 import data from '../../data.json'
 import PaymentModal from '../PaymentModal'
-import debounce from 'lodash.debounce'
 
 interface Props {
   BTCEUR: number;
@@ -16,11 +15,14 @@ interface Props {
 }
 
 export default class Coffee extends React.Component<Props, {}> {
+  private readonly paymentModalDebounced: Function
   private _nodes: Map<any, any>
 
   constructor(props) {
     super(props)
-    this._nodes = new Map();
+    this._nodes = new Map()
+    this.paymentModalDebounced = this.props.paymentModal
+    this.handleBtnClick =  this.handleBtnClick.bind(this)
   }
 
   // ref has been necessary to force focus, because Firefox and Safari on Mac don't give focus to btn on click...
@@ -28,11 +30,7 @@ export default class Coffee extends React.Component<Props, {}> {
   handleBtnClick = (ev, index, item) => {
     const node = this._nodes.get(index)
     node.focus()
-
-    debounce(() => {
-      this.props.paymentModal({id: index + 1, name: item.name})
-      node.blur()
-    }, 1500)()
+    this.paymentModalDebounced({id: index + 1, name: item.name})
   }
 
   render() {

@@ -178,7 +178,7 @@ h1 {
       line-height: 1.5;
 
       &:focus {
-        animation: blink 2s;
+        animation: blink 1s;
         outline:0;
       }
       @keyframes blink {

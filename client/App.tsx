@@ -3,6 +3,7 @@ import {Alert, Button, Spinner} from 'reactstrap'
 import Coffees from 'components/Coffee'
 import './style.scss'
 import api from 'lib/api'
+import debounce from 'lodash.debounce'
 // @ts-ignore
 //import LiveStreamYouTube from './assets/LiveStreamYouTube.png';
 import BitcoinStudioLogo from './assets/bitcoin-studio-black-border.svg';
@@ -92,7 +93,7 @@ export default class App extends React.Component<{}, State> {
            invoiceValue={this.state.invoiceValue}
            modal={this.state.modal}
            nodeInfo={this.state.nodeInfo}
-           paymentModal={this.paymentModal}
+           paymentModal={debounce(this.paymentModal, 1500, {leading: true, trailing:false})}
            paymentRequest={this.state.paymentRequest}
            progress={this.state.progress}
          />
