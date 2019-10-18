@@ -379,9 +379,20 @@ h1 {
   }
 }
 
-#copyIcon {
+/** Action links **/
+a#copyIcon {
   margin-left: 10px;
   img {
     width: 10px;
   }
+}
+.actionLinksClicked {
+  animation: blinkActionLinks 1s;
+}
+@keyframes blinkActionLinks {
+  0% { color: $secondary; }
+  25% { color: $primary; }
+  50% { color: $secondary; }
+  75% { color: $primary; }
+  100% { color: $secondary; }
 }

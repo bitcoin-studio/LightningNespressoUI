@@ -8,10 +8,14 @@ import copy from '../../assets/copy.svg';
 
 interface State {
   nodeInfoTab: boolean;
+  isCopyLinkActive: boolean;
+  isOpenWalletLinkActive: boolean;
 }
 
 const INITIAL_STATE: State = {
-  nodeInfoTab: false
+  nodeInfoTab: false,
+  isCopyLinkActive: false,
+  isOpenWalletLinkActive: false,
 }
 
 interface Props {
@@ -43,8 +47,18 @@ export default class PaymentModal extends React.Component<Props, State> {
       })
   }
 
+  private activateActionLink(actionLink: string) {
+    // @ts-ignore
+    this.setState({[actionLink]: true})
+    setTimeout(() => {
+      // @ts-ignore
+      this.setState({[actionLink]: false})
+    }, 1000)
+  }
+
   render() {
-    let modalBody;
+    let modalBody
+    const { isCopyLinkActive, isOpenWalletLinkActive } = this.state
 
     if (this.state.nodeInfoTab) {
       modalBody = (
@@ -117,18 +131,23 @@ export default class PaymentModal extends React.Component<Props, State> {
 
             <Row noGutters={true}>
               <a
-                className={'link monospace'}
+                className={`link monospace ${isOpenWalletLinkActive ? 'actionLinksClicked' : ''}`}
                 href={`lightning:${this.props.paymentRequest}`}
-                id={"openWithWallet"}>
+                id={"openWithWallet"}
+                onClick={() => this.activateActionLink('isOpenWalletLinkActive')}
+              >
                 {'OPEN WITH YOUR WALLET'}
               </a>
               <a
-                className={'link monospace'}
+                className={`link monospace ${isCopyLinkActive ? 'actionLinksClicked' : ''}`}
                 id="copyIcon"
-                onClick={() => this.setClipboard(this.props.paymentRequest)}
+                onClick={() => {
+                  this.setClipboard(this.props.paymentRequest)
+                  this.activateActionLink('isCopyLinkActive')
+                }}
               >
                 <img src={copy} alt="copy icon"/>
-                <span>COPY</span>
+                {'COPY'}
               </a>
             </Row>
 
