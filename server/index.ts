@@ -10,7 +10,7 @@ const globalAny: any = global
 globalAny.fetch = require('node-fetch')
 const cc = require('cryptocompare')
 let wsConnections = []
-let retryCreateInvoiceStream = 1
+let retryCreateInvoiceStreamCount = 1
 let retryInit = 1
 
 // Configure server
@@ -174,7 +174,29 @@ app.get('/', (req, res) => {
   res.send('You need to load the webpack-dev-server page, not the server page!')
 })
 
+const retryCreateInvoiceStream = async function(error: Error) {
+  console.log('Try opening stream again')
+  let msDelay = 500 * Math.pow(2, retryCreateInvoiceStreamCount)
+  console.log(`#${retryCreateInvoiceStreamCount} - call createLndInvoiceStream again after ${msDelay}`)
+  const openLndInvoicesStreamTimeout = setTimeout(async () => {
+    await createLndInvoiceStream()
+    const nodeInfo = await checkLnd()
+    if (nodeInfo instanceof Error) {
+      retryCreateInvoiceStreamCount++
+      console.log('increment retryCreateInvoiceStreamCount', retryCreateInvoiceStreamCount)
+    } else {
+      console.log('Reset counter retryCreateInvoiceStreamCount')
+      retryCreateInvoiceStreamCount = 1
+    }
+  }, msDelay)
 
+  if (retryCreateInvoiceStreamCount === 15) {
+    console.log('Give up call createLndInvoiceStream')
+    clearTimeout(openLndInvoicesStreamTimeout)
+    throw error
+  }
+}
+ 
 const createLndInvoiceStream = async function() {
   console.log('Opening LND invoice stream...')
   // SubscribeInvoices returns a uni-directional stream (server -> client) for notifying the client of newly added/settled invoices
@@ -195,31 +217,13 @@ const createLndInvoiceStream = async function() {
       console.log(`SubscribeInvoices status: ${JSON.stringify(status)}`)
       // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
     })
-    .on('error', (error) => {
+    .on('error', async (error) => {
       console.log(`SubscribeInvoices error: ${error}`)
-      console.log('Try opening stream again')
-      console.log(`#${retryCreateInvoiceStream} - call createLndInvoiceStream again after ${500 * Math.pow(2, retryCreateInvoiceStream)}`)
-      const openLndInvoicesStreamTimeout = setTimeout(async () => {
-        await createLndInvoiceStream()
-        const nodeInfo = await checkLnd()
-        if (nodeInfo instanceof Error) {
-          retryCreateInvoiceStream++
-          console.log('increment retryCreateInvoiceStream', retryCreateInvoiceStream)
-        } else {
-          console.log('Reset counter retryCreateInvoiceStream')
-          retryCreateInvoiceStream = 1
-        }
-      }, 500 * Math.pow(2, retryCreateInvoiceStream))
-
-      if (retryCreateInvoiceStream === 15) {
-        console.log('Give up call createLndInvoiceStream')
-        clearTimeout(openLndInvoicesStreamTimeout)
-        throw error
-      }
+      await retryCreateInvoiceStream(error)
     })
     .on('end', async () => {
-      // No more data to be consumed from lndInvoicesStream
-      console.log('No more data to be consumed from lndInvoicesStream')
+      console.log('Stream end event. No more data to be consumed from lndInvoicesStream')
+      await retryCreateInvoiceStream(new Error('Impossible to open LND invoice stream'))
     })
 }
 
@@ -261,7 +265,7 @@ const init = function () {
     })
     .then(() => {
       // Ping LND to keep stream open
-      setInterval(checkLnd, (1000 * 60 * 9))
+      //setInterval(checkLnd, (1000 * 60 * 9))
     })
     .catch((err) => {
       console.log('Server initialization failed ', err)
