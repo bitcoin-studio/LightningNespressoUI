@@ -6,11 +6,13 @@ interface Props {
   BTCEUR: number;
   chosenCoffee: { id: number, name: string };
   closeModal: Function;
+  errorPayment: string;
   invoiceValue: number;
   nodeInfo: any;
   modal: boolean;
   paymentModal: Function;
   paymentRequest: string;
+  paymentStateCleanup: Function;
   progress: number;
 }
 
@@ -69,11 +71,13 @@ export default class Coffee extends React.Component<Props, {}> {
           BTCEUR={this.props.BTCEUR}
           chosenCoffee={this.props.chosenCoffee}
           closeModal={this.props.closeModal}
+          errorPayment={this.props.errorPayment}
+          invoiceValue={this.props.invoiceValue}
           isPaymentModalOpen={this.props.modal}
           nodeInfo={this.props.nodeInfo}
           paymentRequest={this.props.paymentRequest}
+          paymentStateCleanup={this.props.paymentStateCleanup}
           progress={this.props.progress}
-          invoiceValue={this.props.invoiceValue}
         />
       </>
     )

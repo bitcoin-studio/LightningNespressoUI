@@ -7,26 +7,34 @@ import logo from '../../assets/cropped-tbc.png';
 import copy from '../../assets/copy.svg';
 
 interface State {
-  nodeInfoTab: boolean;
+  error: string;
+  errorTab: boolean;
   isCopyLinkActive: boolean;
   isOpenWalletLinkActive: boolean;
-}
-
-const INITIAL_STATE: State = {
-  nodeInfoTab: false,
-  isCopyLinkActive: false,
-  isOpenWalletLinkActive: false,
+  nodeInfoTab: boolean;
+  paymentTab: boolean;
 }
 
 interface Props {
   BTCEUR: number;
   chosenCoffee: {id: number, name: string};
   closeModal: Function;
+  errorPayment: string;
   isPaymentModalOpen: boolean;
   nodeInfo: any;
   paymentRequest: string;
+  paymentStateCleanup: Function;
   progress: number;
   invoiceValue: number;
+}
+
+const INITIAL_STATE: State = {
+  error: null,
+  errorTab: false,
+  isCopyLinkActive: false,
+  isOpenWalletLinkActive: false,
+  nodeInfoTab: false,
+  paymentTab: true,
 }
 
 const QRCode = DefaultQRCode as React.ComponentClass<QRCodeProps & React.HTMLProps<SVGElement>>;
@@ -36,6 +44,16 @@ const QRCode = DefaultQRCode as React.ComponentClass<QRCodeProps & React.HTMLPro
  */
 export default class PaymentModal extends React.Component<Props, State> {
   state = {...INITIAL_STATE}
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.errorPayment === null && prevProps.errorPayment !== this.props.errorPayment) {
+      this.setState({errorTab: true})
+      this.setState({paymentTab: false})
+      this.setState({nodeInfoTab: false})
+      this.setState({error: this.props.errorPayment})
+      this.props.paymentStateCleanup()
+    }
+  }
 
   private setClipboard(text) {
     navigator.clipboard.writeText(text)
@@ -54,6 +72,16 @@ export default class PaymentModal extends React.Component<Props, State> {
       // @ts-ignore
       this.setState({[actionLink]: false})
     }, 1000)
+  }
+
+  private resetAll() {
+    this.props.paymentStateCleanup()
+    this.props.closeModal()
+    // Set paymentTab back to true after a delay to avoid glitch
+    setTimeout(() => {
+      this.setState({paymentTab: true})
+      this.setState({errorTab: false})
+    }, 500)
   }
 
   render() {
@@ -92,7 +120,33 @@ export default class PaymentModal extends React.Component<Props, State> {
           </Container>
         </ModalBody>
       )
-    } else {
+    } else if (this.state.errorTab) {
+      modalBody = (
+        <ModalBody>
+          <Container>
+            <Row noGutters={true}>
+              <Col xs={{size: 12}} className={''}>
+                <p>
+                  {this.state.error}
+                </p>
+              </Col>
+            </Row>
+            <Row noGutters={true}>
+              <Col xs={{size: 12}}>
+                <Button className={'cancelPayment btn acme'}
+                        outline
+                        color="warning"
+                        onClick={() => this.resetAll()}
+                >
+                  {'Close'}
+                </Button>
+              </Col>
+            </Row>
+
+          </Container>
+        </ModalBody>
+      )
+    } else if (this.state.paymentTab){
       modalBody = (
         <ModalBody>
           <Container>
@@ -153,7 +207,11 @@ export default class PaymentModal extends React.Component<Props, State> {
 
             <Row noGutters={true}>
               <Col xs={{size: 12}}>
-                <Button className={'cancelPayment btn acme'} outline color="warning" onClick={() => this.props.closeModal()}>
+                <Button className={'cancelPayment btn acme'}
+                        outline
+                        color="warning"
+                        onClick={() => this.resetAll()}
+                >
                   {'Cancel Payment'}
                 </Button>
               </Col>
@@ -177,7 +235,7 @@ export default class PaymentModal extends React.Component<Props, State> {
           className={'paymentModal'}
           isOpen={this.props.isPaymentModalOpen}
           returnFocusAfterClose={false}
-          toggle={() => this.props.closeModal()}
+          toggle={() => this.resetAll()}
         >
           <Row noGutters={true}>
             <Col xs={{ size: 2 }}>

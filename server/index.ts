@@ -12,6 +12,7 @@ const cc = require('cryptocompare')
 let wsConnections = []
 let retryCreateInvoiceStreamCount = 1
 let retryInit = 1
+let retryDelivery = 1
 
 // Configure server
 const wsInstance = expressWs(express(), undefined, {wsOptions: {clientTracking: true}})
@@ -19,50 +20,6 @@ const app = wsInstance.app
 app.use(cors({origin: '*'}))
 app.use(bodyParser.json())
 
-// Push invoice to client
-const notifyClientPaidInvoice = async function (invoice, clientIdFromInvoice) {
-  wsConnections.forEach((connection) => {
-    const id = Object.keys(connection)[0]
-
-    if (clientIdFromInvoice === id) {
-      console.log('Notify client', id)
-      console.log('Websocket readyState', connection[id].readyState)
-      connection[id].send(
-        JSON.stringify({
-          type: 'invoice-settlement',
-          data: invoice,
-        }), (error) => {
-          if (error) {
-            console.log(`Error when sending "invoice-settlement" to client ${id}`, error)
-          }
-        })
-    }
-  })
-}
-
-// Call ESP8266 - Deliver coffee
-const deliverCoffee = async function (invoice) {
-  let id = invoice.memo.charAt(1)
-  console.log(`Deliver coffee on rail ${id}`)
-  const body = { coffee: id as string};
-  globalAny.fetch(env.VENDING_MACHINE, {
-    method: 'post',
-    body:    JSON.stringify(body),
-    headers: { 'Content-Type': 'application/json' },
-  })
-    .then(response => {
-      if(response.ok){
-        console.log('Request to vending machine sent')
-      }else{
-        throw new Error(response.statusText)
-      }
-    })
-    .catch(error => {
-      console.log('Coffee delivering error', error)
-      console.log('Try delivery again...')
-      deliverCoffee(invoice)
-    })
-}
 
 // Websocket route
 app.ws('/api/ws', (ws) => {
@@ -174,6 +131,90 @@ app.get('/', (req, res) => {
   res.send('You need to load the webpack-dev-server page, not the server page!')
 })
 
+
+// Push invoice to client
+const notifyClientPaidInvoice = function (invoice, clientIdFromInvoice) {
+  wsConnections.forEach((connection) => {
+    const id = Object.keys(connection)[0]
+
+    if (clientIdFromInvoice === id) {
+      console.log('Notify client', id)
+      console.log('Websocket readyState', connection[id].readyState)
+      connection[id].send(
+        JSON.stringify({
+          type: 'invoice-settlement',
+          data: invoice,
+        }), (error) => {
+          if (error) {
+            console.log(`Error when sending "invoice-settlement" to client ${id}`, error)
+          }
+        })
+    }
+  })
+}
+
+const notifyClientDeliveryFailure = function (error, clientIdFromInvoice) {
+  wsConnections.forEach((connection) => {
+    const id = Object.keys(connection)[0]
+
+    if (clientIdFromInvoice === id) {
+      console.log('Notify client delivery failure', id)
+      console.log('Websocket readyState', connection[id].readyState)
+      connection[id].send(
+        JSON.stringify({
+          type: 'delivery-failure',
+          data: error.message,
+        }), (error) => {
+          if (error) {
+            console.log(`Error notify delivery failure to client ${id}`, error)
+          }
+        })
+    }
+  })
+}
+
+// Call ESP8266 - Deliver coffee
+const deliverCoffee = function (invoice, clientIdFromInvoice) {
+  return new Promise((resolve, reject) => {
+    let id = invoice.memo.charAt(1)
+    console.log(`Deliver coffee on rail ${id}`)
+    const body = { coffee: id as string};
+    globalAny.fetch(env.VENDING_MACHINE, {
+      method: 'post',
+      body:    JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },
+    })
+      .then(response => {
+        if(response.ok){
+          console.log('Request to vending machine sent')
+        }else{
+          throw new Error(response.statusText)
+        }
+      })
+      .then(() => {
+        // Reset counter
+        retryDelivery = 1
+        resolve()
+      })
+      .catch((error) => {
+        console.log('Coffee delivering error', error)
+        console.log(`#${retryDelivery} - Try delivery again after ${200 * Math.pow(2, retryDelivery)}ms ...`)
+        const deliveryTimeout = setTimeout(() => deliverCoffee(invoice, clientIdFromInvoice), 200 * Math.pow(2, retryDelivery))
+        if (retryDelivery === 3) {
+          console.log('Give up delivery')
+          clearTimeout(deliveryTimeout)
+          reject(new Error ('Sorry, your coffee delivery has failed.'))
+        }
+        retryDelivery++
+      })
+  })
+    .catch((error) => {
+      console.log(error)
+      notifyClientDeliveryFailure(error, clientIdFromInvoice)
+      retryDelivery = 1
+    })
+}
+
 const retryCreateInvoiceStream = async function(error: Error) {
   console.log('Try opening stream again')
   let msDelay = 500 * Math.pow(2, retryCreateInvoiceStreamCount)
@@ -196,7 +237,7 @@ const retryCreateInvoiceStream = async function(error: Error) {
     throw error
   }
 }
- 
+
 const createLndInvoiceStream = async function() {
   console.log('Opening LND invoice stream...')
   // SubscribeInvoices returns a uni-directional stream (server -> client) for notifying the client of newly added/settled invoices
@@ -210,8 +251,10 @@ const createLndInvoiceStream = async function() {
       // Handle Invoice Settlement
       console.log(`Invoice settled - ${invoice.memo}`)
       const clientIdFromInvoice = invoice.memo.substr(invoice.memo.indexOf('@') + 1, 4)
-      await notifyClientPaidInvoice(invoice, clientIdFromInvoice)
-      await deliverCoffee(invoice)
+      deliverCoffee(invoice, clientIdFromInvoice)
+        .then(() => {
+          notifyClientPaidInvoice(invoice, clientIdFromInvoice)
+        })
     })
     .on('status', (status) => {
       console.log(`SubscribeInvoices status: ${JSON.stringify(status)}`)

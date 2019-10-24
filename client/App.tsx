@@ -12,7 +12,8 @@ interface State {
   BTCEUR: number;
   chosenCoffee: {id: number, name: string};
   clientId: string;
-  error: Error | null;
+  errorPayment: string;
+  errorServer: Error | null;
   invoiceValue: number;
   isConnecting: boolean;
   nodeInfo: any;
@@ -22,28 +23,32 @@ interface State {
   progress: number;
 }
 
-// Coffee invoice
-const INVOICE_STATE = {
+const PAYMENT_STATE = {
   BTCEUR: null, // price at invoice creation
   chosenCoffee: {id: null, name: null},
+  errorPayment: null,
   invoiceValue: null,
-  modal: false,
   modalTimer: null,
   paymentRequest: '',
   progress: 0
 }
 
-const INITIAL_STATE: State = {
-  ...INVOICE_STATE,
+const APP_STATE = {
   clientId: null,
-  error: null,
+  errorServer: null,
   isConnecting: true,
+  modal: false,
   nodeInfo: null,
+}
+
+const INITIAL_STATE: State = {
+  ...PAYMENT_STATE,
+  ...APP_STATE,
 }
 
 
 export default class App extends React.Component<{}, State> {
-  state: State = { ...INITIAL_STATE };
+  state: State = { ...INITIAL_STATE }
 
   componentDidMount () {
     // Establish websocket connection
@@ -64,7 +69,7 @@ export default class App extends React.Component<{}, State> {
   }
 
   render() {
-    const { error, isConnecting } = this.state;
+    const { errorServer, isConnecting } = this.state;
 
     let content;
 
@@ -73,12 +78,12 @@ export default class App extends React.Component<{}, State> {
         <div className="d-flex justify-content-center p-5">
           <Spinner color="warning" style={{ width: '3rem', height: '3rem' }} />
         </div>
-      );
-    } else if (error) {
+      )
+    } else if (errorServer) {
       content = (
         <Alert color="danger">
           <h4 className="alert-heading">Something went wrong!</h4>
-          <p>{error.message}</p>
+          <p>{errorServer.message}</p>
           <Button block outline color="danger" onClick={this.connect}>
             Try to reconnect
           </Button>
@@ -90,11 +95,13 @@ export default class App extends React.Component<{}, State> {
            BTCEUR={this.state.BTCEUR}
            chosenCoffee={this.state.chosenCoffee}
            closeModal={this.closeModal}
+           errorPayment={this.state.errorPayment}
            invoiceValue={this.state.invoiceValue}
            modal={this.state.modal}
            nodeInfo={this.state.nodeInfo}
            paymentModal={debounce(this.paymentModal, 1500, {leading: true, trailing:false})}
            paymentRequest={this.state.paymentRequest}
+           paymentStateCleanup={this.paymentStateCleanup}
            progress={this.state.progress}
          />
       );
@@ -125,13 +132,15 @@ export default class App extends React.Component<{}, State> {
     )
   }
 
-  // Do all the invoice cleanup
-  private closeModal = () => {
-    // Clear timer waiting bar
+  private paymentStateCleanup = () => {
+    console.log('Payment state cleanup')
     clearInterval(this.state.modalTimer)
-    console.log('Reset state')
+    this.setState({...PAYMENT_STATE})
+  }
+
+  private closeModal = () => {
     console.log('Close modal')
-    this.setState({...INVOICE_STATE})
+    this.setState({modal: false})
   }
 
   // Reset our state, connect websocket, and update state on new data or error
@@ -165,11 +174,16 @@ export default class App extends React.Component<{}, State> {
           console.log('Client ID is', msg.data)
           this.setState({clientId: msg.data})
         }
-
         // Invoice settlement
         if (msg && msg.type === 'invoice-settlement') {
           console.log('Invoice settled!', msg.data)
+          this.paymentStateCleanup()
           this.closeModal()
+        }
+        // Delivery failure
+        if (msg && msg.type === 'delivery-failure') {
+          console.log('delivery failuree', msg.data)
+          this.setState({errorPayment: msg.data})
         }
       } catch(err) {
         console.error('Websocket onmessage catch', err)
@@ -178,14 +192,14 @@ export default class App extends React.Component<{}, State> {
 
     socket.addEventListener('close', (ev) => {
       console.log('Websocket close event ', ev)
-      this.setState({ error: new Error('Connection to server closed unexpectedly.') })
+      this.setState({ errorServer: new Error('Connection to server closed unexpectedly.') })
       // @ts-ignore
       const {readyState} = ev.currentTarget
       readyState ? console.log("readyState: ", readyState) : null
     })
 
     socket.addEventListener('error', (ev) => {
-      this.setState({ error: new Error('There was an error, see your console for more information.') });
+      this.setState({ errorServer: new Error('There was an error, see your console for more information.') });
       console.log('Websocket connection error')
       console.error('websocket onerror', ev)
     })
@@ -217,7 +231,7 @@ export default class App extends React.Component<{}, State> {
       })
     } catch (err) {
       this.setState({
-        error: err.message,
+        errorServer: err.message,
       })
     }
   }
