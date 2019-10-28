@@ -81,6 +81,7 @@ export default class PaymentModal extends React.Component<Props, State> {
     setTimeout(() => {
       this.setState({paymentTab: true})
       this.setState({errorTab: false})
+      this.setState({nodeInfoTab: false})
     }, 500)
   }
 
