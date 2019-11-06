@@ -18,7 +18,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@radar/lnrpc": "^0.7.1-beta",
+    "@radar/lnrpc": "^0.8.0-beta.4",
     "@types/qrcode.react": "^0.9.0",
     "body-parser": "^1.19.0",
     "bootstrap": "^4.3.1",
