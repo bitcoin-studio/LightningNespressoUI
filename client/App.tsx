@@ -209,17 +209,21 @@ export default class App extends React.Component<{}, State> {
     try {
       console.log(`Generate invoice for ${chosenCoffee.name}, row ${chosenCoffee.id}`)
       let value;
-      let prices = await api.getPrice();
-      let BTCEUR = Number((prices.EUR).toFixed(0))
-      this.setState({'BTCEUR': BTCEUR})
-      console.log('price BTCEUR ', BTCEUR)
-      value = Number(((Number(process.env.PRICE) / BTCEUR) * 10**8).toFixed(0))
-      console.log('Invoice amount (sats) ', value)
+      if (process.env.CURRENCY === '€') {
+        let prices = await api.getPrice();
+        let BTCEUR = Number((prices.EUR).toFixed(0))
+        this.setState({'BTCEUR': BTCEUR})
+        console.log('price BTCEUR ', BTCEUR)
+        value = Number(((Number(process.env.PRICE) / BTCEUR) * 10 ** 8).toFixed(0))
+        console.log('Invoice amount (sats) ', value)
 
-      // If value > 20 000 sats, return
-      if (value > 20000) {
-        console.log('value greater than 20 000 sats!!', value)
-        return
+        // If value > 20 000 sats, return
+        if (value > 20000) {
+          console.log('value greater than 20 000 sats!!', value)
+          return
+        }
+      } else {
+        value = process.env.PRICE
       }
 
       this.setState({invoiceValue: value})

@@ -160,10 +160,17 @@ export default class PaymentModal extends React.Component<Props, State> {
               <Col xs={{size: 6}} className={'invoiceInfo-col1'}>
                 <p>{this.props.chosenCoffee.name}</p>
               </Col>
-              <Col xs={{size: 6}} className={'invoiceInfo-col2'}>
-                <p>{`${this.props.invoiceValue} Sats (${process.env.PRICE} EUR)`}</p>
-                <p>{`1 BTC = ${this.props.BTCEUR} € (EUR)`}</p>
-              </Col>
+              {
+                process.env.CURRENCY === '€' ? (
+                  <Col xs={{size: 6}} className={'invoiceInfo-col2'}>
+                    <p>{`${this.props.invoiceValue} Sats (${process.env.PRICE} EUR)`}</p>
+                    <p>{`1 BTC = ${this.props.BTCEUR} € (EUR)`}</p>
+                  </Col>
+                ) : (
+                  <></>
+                )
+              }
+
             </Row>
             <Row noGutters={true}>
               <Col xs={{size: 6, offset: 3}}>

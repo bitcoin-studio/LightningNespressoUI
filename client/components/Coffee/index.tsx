@@ -59,7 +59,7 @@ export default class Coffee extends React.Component<Props, {}> {
             ref={c => this._nodes.set(index, c)}
             type="button"
             onClick={(ev) => this.handleBtnClick(ev, index, item)}>
-            {`Buy for ${process.env.PRICE}€`}
+            {`Buy for ${process.env.PRICE} ${process.env.CURRENCY}`}
           </button>
         </div>
       )
