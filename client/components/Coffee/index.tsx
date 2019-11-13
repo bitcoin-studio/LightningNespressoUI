@@ -36,6 +36,8 @@ export default class Coffee extends React.Component<Props, {}> {
   }
 
   render() {
+    const currency = process.env.CURRENCY === 'sats' ? ' sats' : process.env.CURRENCY
+
     let coffees = Object.keys(data)
       .map(key => data[Number(key)])
       .map((item, index) =>
@@ -59,7 +61,7 @@ export default class Coffee extends React.Component<Props, {}> {
             ref={c => this._nodes.set(index, c)}
             type="button"
             onClick={(ev) => this.handleBtnClick(ev, index, item)}>
-            {`Buy for ${process.env.PRICE} ${process.env.CURRENCY}`}
+            {`Buy for ${process.env.PRICE}${currency}`}
           </button>
         </div>
       )
