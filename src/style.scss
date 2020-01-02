@@ -1,6 +1,9 @@
-@import url('https://fonts.googleapis.com/css?family=Gabriela&display=swap');
-@import url('https://fonts.googleapis.com/css?family=Acme&display=swap');
-@import url('https://fonts.googleapis.com/css?family=Oxygen+Mono&display=swap');
+// Title
+@import url('https://fonts.googleapis.com/css?family=Acme&display=block');
+// Monospace
+@import url('https://fonts.googleapis.com/css?family=Oxygen+Mono&display=block');
+// All other Text
+@import url('https://fonts.googleapis.com/css?family=Merriweather&display=block');
 
 .monospace {
   font-family: 'Oxygen Mono', monospace;
@@ -14,7 +17,8 @@ $secondary: #f1c40f;
 $tertiary: #212121;
 
 .App {
-  font-family: Gabriela, serif;
+  background-color: #f5f5f5d4;
+  font-family: Merriweather, serif;
   display: grid;
   grid-template-rows: 150px auto auto;
   min-height: 100vh;
@@ -88,10 +92,10 @@ h1 {
   }
 
   .coffee {
-    border: 1px solid lighten($tertiary, 60%);
+    border: 1px solid lighten($tertiary, 55%);
     border-radius: 0.25rem;
     display: grid;
-    grid-template-rows: auto 35px 1fr 30px 30px;
+    grid-template-rows: auto 35px 1fr 50px 30px;
     word-wrap: break-word;
     @media screen and (max-width: 576px) {
       & {
@@ -142,6 +146,8 @@ h1 {
     }
 
     p {
+      line-height: 18px;
+      
       @media screen and (max-width: 576px) {
         & {
           font-size: 0.4rem;
@@ -174,7 +180,7 @@ h1 {
       border: 1px solid transparent;
       border-radius: 2px;
       color: #fff;
-      font-family: Gabriela, serif;
+      font-family: Merriweather, serif;
       line-height: 1.5;
 
       &:focus {
@@ -217,40 +223,50 @@ h1 {
     }
 
     /* Intensity level */
-    #intensityLevelContainer {
-      display: flex;
-
-      .intensitySquare {
-        border: solid 1px $tertiary;
-        margin: 1px;
-        width: 7%;
-
-        @media screen and (max-width: 576px) {
-          & {
-            height: 5px;
-          }
-        }
-        @media screen and (min-width: 576px) and (max-width: 768px) {
-          & {
-            height: 8px;
-          }
-        }
-        @media screen and (min-width: 768px) {
-          & {
-            height: 11px;
-          }
-        }
+    .intensity {
+      margin-bottom: 5px;
+      
+      .intensity__title {
+        font-family: Acme, sans-serif;
+        font-size: 0.8rem;
+        margin-bottom: 5px;
       }
-
-      .intensitySquare-active {
-        background-color: $tertiary;
+      
+      & .intensity__squares {
+        display: flex;
+    
+        .intensity__square {
+          border: solid 1px $tertiary;
+          margin: 1px;
+          width: 7%;
+      
+          @media screen and (max-width: 576px) {
+            & {
+              height: 5px;
+            }
+          }
+          @media screen and (min-width: 576px) and (max-width: 768px) {
+            & {
+              height: 8px;
+            }
+          }
+          @media screen and (min-width: 768px) {
+            & {
+              height: 11px;
+            }
+          }
+        }
+    
+        .intensity__square-active {
+          background-color: $tertiary;
+        }
       }
     }
   }
 }
 
 #footer {
-  font-family: Gabriela, serif;
+  font-family: Merriweather, serif;
   font-size: 1.3rem;
   margin-bottom: 10px;
   text-align: center;
@@ -276,6 +292,7 @@ h1 {
   }
 }
 
+/* Modals */
 .paymentModal {
   .row {
     margin-bottom: 10px;
@@ -290,18 +307,26 @@ h1 {
   }
 
   .progress {
-    background-color: lighten($primary, 35%);
+    background-color: #e9ecef;
     border-radius: 0;
+    height: 1.2rem;
+    left: -31px;
     position: relative;
     top: -26px;
     width: calc(100% + 62px);
-    left: -31px;
+  
+    .progress-bar {
+      background-color: lighten($primary, 20%);
+  
+      .progress-bar__text {
+        color: black;
+        font-weight: bold;
+        left: 5%;
+        position: absolute;
+      }
+    }
   }
-
-  .progress-bar {
-    background-color: $primary;
-  }
-
+  
   .qrcodeWrapper {
     padding: 10px;
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -310,7 +335,7 @@ h1 {
 
   .btn {
     border-radius: 0;
-    font-family: Acme, serif;
+    font-family: Acme, sans-serif;
     width: 100%;
     &:hover {
       color: #fff;
@@ -334,9 +359,8 @@ h1 {
   }
 }
 
-
 .invoiceInfo {
-  font-family: Gabriela, serif;
+  font-family: Merriweather, serif;
 
   p {
     margin-bottom: 0.25rem;
@@ -346,7 +370,7 @@ h1 {
     :first-child {
       font-size: 0.8rem;
       font-weight: bold;
-      font-family: Acme;
+      font-family: Acme, sans-serif;
     }
     font-size: 0.65rem;
   }
@@ -358,6 +382,21 @@ h1 {
     font-size: 0.65rem;
   }
 }
+
+.invoice-settled {
+  .invoice-settle__image {
+    display: block;
+    margin: 40px auto 25px auto;
+    width: 100%;
+  }
+}
+
+.error-modal {
+  .error-modal__message {
+    margin-bottom: 3rem;
+  }
+}
+
 
 .link, .link span {
   background-color: lighten($secondary, 35%);
@@ -395,4 +434,12 @@ a#copyIcon {
   50% { color: $secondary; }
   75% { color: $primary; }
   100% { color: $secondary; }
+}
+
+.spinner-container {
+  grid-column: 3;
+  & > div {
+    width: 9rem;
+    height: 9rem;
+  }
 }

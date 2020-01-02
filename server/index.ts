@@ -2,7 +2,7 @@ import express from 'express'
 import expressWs from 'express-ws'
 import cors from 'cors'
 import bodyParser from 'body-parser'
-import {Invoice, GetInfoResponse, Readable} from '@radar/lnrpc'
+import {Invoice, GetInfoResponse} from '@radar/lnrpc'
 import {randomBytes} from 'crypto'
 import env from './env'
 import {node, initNode} from './node'
@@ -23,12 +23,12 @@ app.use(bodyParser.json())
 
 // Websocket route
 app.ws('/api/ws', (ws) => {
-  const clientId: string = randomBytes(2).toString('hex')
-  console.log(`New websocket connection open by client ${clientId}`)
+  const wsClientId: string = randomBytes(2).toString('hex')
+  console.log(`New websocket connection open by client ${wsClientId}`)
 
   // Send this key to client
   ws.send(JSON.stringify({
-    data: clientId,
+    data: wsClientId,
     type: 'client-id'
   }))
 
@@ -49,23 +49,23 @@ app.ws('/api/ws', (ws) => {
 
   ws.addEventListener('close', (e) => {
     if (e.wasClean) {
-      console.log(`Connection websocket ${clientId} closed normally`)
+      console.log(`Connection websocket ${wsClientId} closed normally`)
     } else {
-      console.log(`Connection websocket ${clientId} closed abnormally`)
+      console.log(`Connection websocket ${wsClientId} closed abnormally`)
       console.log('Close code', e.code)
     }
-    console.log(`Stop pinging client ${clientId}`)
+    console.log(`Stop pinging client ${wsClientId}`)
     clearInterval(pingInterval)
 
     // Remove closed ws
     wsConnections = wsConnections.filter(function(wsConnection){
-      // Check if wsConnection is the one clientId is closing, return all the others
-      return Object.keys(wsConnection)[0] !== clientId
+      // Check if wsConnection is the one wsClientId is closing, return all the others
+      return Object.keys(wsConnection)[0] !== wsClientId
     })
   })
 
   // Store client connection
-  wsConnections.push({[clientId]: ws})
+  wsConnections.push({[wsClientId]: ws})
   console.log(`There ${wsConnections.length === 1 ? 'is' : 'are'} ${wsConnections.length} websocket ` +
     `connection${wsConnections.length === 1 ? '' : 's'} currently`)
 })
@@ -133,11 +133,11 @@ app.get('/', (req, res) => {
 
 
 // Push invoice to client
-const notifyClientPaidInvoice = function (invoice, clientIdFromInvoice) {
+const notifyClientPaidInvoice = function (invoice, wsClientIdFromInvoice) {
   wsConnections.forEach((connection) => {
     const id = Object.keys(connection)[0]
 
-    if (clientIdFromInvoice === id) {
+    if (wsClientIdFromInvoice === id) {
       console.log('Notify client', id)
       console.log('Websocket readyState', connection[id].readyState)
       connection[id].send(
@@ -153,11 +153,11 @@ const notifyClientPaidInvoice = function (invoice, clientIdFromInvoice) {
   })
 }
 
-const notifyClientDeliveryFailure = function (error, clientIdFromInvoice) {
+const notifyClientDeliveryFailure = function (error, wsClientIdFromInvoice) {
   wsConnections.forEach((connection) => {
     const id = Object.keys(connection)[0]
 
-    if (clientIdFromInvoice === id) {
+    if (wsClientIdFromInvoice === id) {
       console.log('Notify client delivery failure', id)
       console.log('Websocket readyState', connection[id].readyState)
       connection[id].send(
@@ -174,7 +174,7 @@ const notifyClientDeliveryFailure = function (error, clientIdFromInvoice) {
 }
 
 // Call ESP8266 - Deliver coffee
-const deliverCoffee = function (invoice, clientIdFromInvoice) {
+const deliverCoffee = function (invoice, wsClientIdFromInvoice) {
   return new Promise((resolve, reject) => {
     let id = invoice.memo.charAt(1)
     console.log(`Deliver coffee on rail ${id}`)
@@ -199,7 +199,7 @@ const deliverCoffee = function (invoice, clientIdFromInvoice) {
       .catch((error) => {
         console.log('Coffee delivering error', error)
         console.log(`#${retryDelivery} - Try delivery again after ${200 * Math.pow(2, retryDelivery)}ms ...`)
-        const deliveryTimeout = setTimeout(() => deliverCoffee(invoice, clientIdFromInvoice), 200 * Math.pow(2, retryDelivery))
+        const deliveryTimeout = setTimeout(() => deliverCoffee(invoice, wsClientIdFromInvoice), 200 * Math.pow(2, retryDelivery))
         if (retryDelivery === 3) {
           console.log('Give up delivery')
           clearTimeout(deliveryTimeout)
@@ -210,7 +210,7 @@ const deliverCoffee = function (invoice, clientIdFromInvoice) {
   })
     .catch((error) => {
       console.log(error)
-      notifyClientDeliveryFailure(error, clientIdFromInvoice)
+      notifyClientDeliveryFailure(error, wsClientIdFromInvoice)
       retryDelivery = 1
     })
 }
@@ -241,7 +241,7 @@ const retryCreateInvoiceStream = async function(error: Error) {
 const createLndInvoiceStream = async function() {
   console.log('Opening LND invoice stream...')
   // SubscribeInvoices returns a uni-directional stream (server -> client) for notifying the client of newly added/settled invoices
-  let lndInvoicesStream = await node.subscribeInvoices() as any as Readable<Invoice>
+  let lndInvoicesStream = await node.subscribeInvoices()
   lndInvoicesStream
     .on('data', async (invoice: Invoice) => {
       // Skip unpaid / irrelevant invoice updates
@@ -250,10 +250,10 @@ const createLndInvoiceStream = async function() {
 
       // Handle Invoice Settlement
       console.log(`Invoice settled - ${invoice.memo}`)
-      const clientIdFromInvoice = invoice.memo.substr(invoice.memo.indexOf('@') + 1, 4)
-      deliverCoffee(invoice, clientIdFromInvoice)
+      const wsClientIdFromInvoice = invoice.memo.substr(invoice.memo.indexOf('@') + 1, 4)
+      deliverCoffee(invoice, wsClientIdFromInvoice)
         .then(() => {
-          notifyClientPaidInvoice(invoice, clientIdFromInvoice)
+          notifyClientPaidInvoice(invoice, wsClientIdFromInvoice)
         })
     })
     .on('status', (status) => {
@@ -300,7 +300,7 @@ const init = function () {
       await createLndInvoiceStream()
 
       console.log('Starting server...')
-      await app.listen(env.PORT, () => console.log(`API Server started at http://localhost:${env.PORT}!`))
+      await app.listen(env.SERVER_PORT, () => console.log(`API Server started at http://localhost:${env.SERVER_PORT}!`))
     })
     .then(() => {
       // Reset counter

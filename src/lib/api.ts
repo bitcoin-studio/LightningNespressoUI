@@ -19,7 +19,8 @@ class API {
   }
 
   getNodeInfo() {
-    return this.request<{ info: object; }>(
+    // TODO: Figure out the right type
+    return this.request<any>(
       'GET',
       '/getNodeInfo',
       {},
@@ -88,5 +89,5 @@ class API {
   }
 }
 
-// Export a default API that points at the API_PATH environment variable
-export default new API(process.env.API_PATH as string)
+// Export a default API that points at the REACT_APP_API_PATH environment variable
+export default new API(process.env.REACT_APP_API_PATH as string)

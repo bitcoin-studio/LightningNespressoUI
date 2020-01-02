@@ -31,7 +31,7 @@
     "id": 5,
     "name": "Volluto Decaffeinato",
     "description": "Delightfully sweet and smooth, the selected pure Arabica beans from South America are roasted to reveal the sweet biscuity, fresh and fruity notes",
-    "image": "https://www.nespresso.com/ecom/medias/sys_master/public/12566074916894/volluto-decaf-2000x2000.png",
+    "image": "../assets/coffees/volluto.png",
     "intensity": 4
   }
 ]
