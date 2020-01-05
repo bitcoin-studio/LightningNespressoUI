@@ -4,11 +4,13 @@
   "description": "Nespresso capsule vending machine Bitcoin point of sales terminal. Select your coffee, pay with Bitcoin (via Lightning Network), and the vending machine will deliver your Nespresso capsule.",
   "main": "index.js",
   "scripts": {
-    "build": "react-scripts build",
+    "build": "concurrently --kill-others-on-fail \"yarn build:client\" \"yarn build:server\"",
+    "build:client": "react-scripts build",
     "build:server": "cd server && tsc",
-    "dev": "concurrently -n server,client \"yarn start:server\" \"yarn start\"",
+    "dev": "concurrently --kill-others-on-fail -n server,client \"yarn start:server\" \"yarn start:client\"",
     "eject": "react-scripts eject",
-    "start": "react-scripts start",
+    "prod": "yarn build && concurrently -n server,client \"nodemon server\" \"cd build && serve\"",
+    "start:client": "react-scripts start",
     "start:server": "nodemon --config nodemon.json",
     "test": "react-scripts test"
   },
