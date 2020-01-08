@@ -28,7 +28,7 @@ class API {
   }
 
   getPrice() {
-    return this.request<{ EUR: number, USD: number; }>(
+    return this.request<{ EUR: number }>(
       'GET',
       '/getPrice',
       {},

@@ -89,10 +89,8 @@ export const Home: React.FC<Props> = (
           }
           log('Invoice amount (sats) ', invoiceAmount)
 
-          // If invoiceAmount > 20 000 sats, return
           if (invoiceAmount > 20000) {
-            log('invoiceAmount greater than 20 000 sats!!', invoiceAmount)
-            return
+            throw new Error('invoiceAmount greater than 20 000 sats')
           }
         } else {
           // Fiat amount

@@ -1,12 +1,16 @@
-import createLnRpc, { LnRpc } from '@radar/lnrpc';
-import env from './env';
+import createLnRpc, {LnRpc} from '@radar/lnrpc'
+import {env} from './env'
 
-export let node: LnRpc;
+export let node: LnRpc
 
-export async function initNode() {
-  node = await createLnRpc({
-    server: env.LND_GRPC_URL,
-    cert: Buffer.from(env.LND_TLS_CERT, 'base64').toString('ascii'),
-    macaroon: Buffer.from(env.LND_MACAROON, 'base64').toString('hex'),
-  })
+export const initNode: () => Promise<void> = async function () {
+  try {
+    node = await createLnRpc({
+      server: env.LND_GRPC_URL as string,
+      cert: Buffer.from(env.LND_TLS_CERT as string, 'base64').toString('ascii'),
+      macaroon: Buffer.from(env.LND_MACAROON as string, 'base64').toString('hex'),
+    })
+  } catch (err) {
+    console.error(err)
+  }
 }
