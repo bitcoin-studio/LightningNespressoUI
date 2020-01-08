@@ -32,5 +32,4 @@ export const InvoiceSettledModal: React.FC = () => {
       </Button>
     </div>
   )
-
 }
