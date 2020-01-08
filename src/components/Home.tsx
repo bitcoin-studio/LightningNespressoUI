@@ -82,7 +82,7 @@ export const Home: React.FC<Props> = (
           let btcEurPrice = Number((prices.EUR).toFixed(0))
           setBtcEurPrice(Number((prices.EUR).toFixed(0)))
           log('Price BTCEUR ', btcEurPrice)
-          if (process.env.REACT_APP_TESTING) {
+          if (process.env.REACT_APP_TESTING === 'true') {
             invoiceAmount = 1
           } else {
             invoiceAmount = Number(((Number(process.env.REACT_APP_PRICE) / btcEurPrice) * 10 ** 8).toFixed(0))
