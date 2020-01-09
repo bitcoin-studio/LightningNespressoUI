@@ -210,7 +210,7 @@ const createLndInvoiceStream: () => void = async function () {
         deliverCoffee(invoice, wsClientIdFromInvoice)
       })
       .on('status', (status) => {
-        console.log(`SubscribeInvoices status: ${JSON.stringify(status)}`)
+        console.log(`SubscribeInvoices status: ${status.details} - Code: ${status.code}`)
         // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
       })
       .on('error', (error: Error) => {
@@ -250,6 +250,10 @@ const init: () => void = function () {
       await createLndInvoiceStream()
       console.log('Starting server...')
       await app.listen(env.SERVER_PORT, () => console.log(`API Server started at http://localhost:${env.SERVER_PORT}!`))
+    })
+    .then(() => {
+      // Ping LND to keep stream open
+      setInterval(checkLnd, (1000 * 60 * 9))
     })
     .catch((err) => {
       console.error('Server initialization failed ', err)
