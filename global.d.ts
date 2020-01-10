@@ -2,7 +2,7 @@ type App = {
   wsClientId: string
   error: string
   isWsConnected: boolean
-  nodeInfo: {uris: [string]} | null
+  nodeInfo: {uris: [string], alias: string} | null
   isModalOpen: boolean
   errorModal: boolean
   nodeInfoModal: boolean

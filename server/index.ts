@@ -2,7 +2,8 @@ import express, {NextFunction, Request, Response} from 'express'
 import axios from 'axios'
 import retry from 'async-retry'
 import cors from 'cors'
-import ws from 'ws'
+// eslint-disable-next-line import/no-extraneous-dependencies
+import WebSocket from 'ws' // @types/ws
 import expressWs, {Application} from 'express-ws'
 import bodyParser from 'body-parser'
 import {GetInfoResponse, Invoice} from '@radar/lnrpc'
@@ -10,7 +11,7 @@ import {randomBytes} from 'crypto'
 import {env} from './env'
 import {initNode, node} from './node'
 
-let wsConnections: { [x: string]: ws }[] = []
+let wsConnections: { [x: string]: WebSocket }[] = []
 
 // Server configuration
 const app: Application = expressWs(express(), undefined, {wsOptions: {clientTracking: true}}).app
@@ -19,7 +20,7 @@ app.use(bodyParser.json())
 // Security headers should be set at reverse proxy level
 
 // Websocket route
-app.ws('/api/ws', (ws: ws) => {
+app.ws('/api/ws', (ws: WebSocket) => {
   const wsClientId: string = randomBytes(2).toString('hex')
   console.log(`New websocket connection open by client ${wsClientId}`)
 
@@ -29,12 +30,9 @@ app.ws('/api/ws', (ws: ws) => {
     type: 'client-id',
   }))
 
-  const pingInterval = setInterval(() => ws.ping(
-    'heartbeat',
-    false,
-  ), 10000)
-
-  ws.on('pong', function heartbeat(pingData) {
+  // Ping / Pong
+  const pingInterval = setInterval(() => ws.ping('heartbeat', false), 10000)
+  ws.on('pong', (pingData) => {
     if (pingData.toString() !== 'heartbeat') {
       console.log('Websocket pong not received')
     }
@@ -54,17 +52,14 @@ app.ws('/api/ws', (ws: ws) => {
     console.log(`Stop pinging client ${wsClientId}`)
     clearInterval(pingInterval)
 
-    // Remove closed ws
-    wsConnections = wsConnections.filter(function (wsConnection) {
-      // Check if wsConnection is the one wsClientId is closing, return all the others
-      return Object.keys(wsConnection)[0] !== wsClientId
-    })
+    // Remove closing ws, return all the others
+    wsConnections = wsConnections.filter((wsConnection) => Object.keys(wsConnection)[0] !== wsClientId)
   })
 
   // Store client connection
   wsConnections.push({[wsClientId]: ws})
-  console.log(`There ${wsConnections.length === 1 ? 'is' : 'are'} ${wsConnections.length} websocket ` +
-    `connection${wsConnections.length === 1 ? '' : 's'} currently`)
+  console.log(`There ${wsConnections.length === 1 ? 'is' : 'are'} ${wsConnections.length} websocket `
+    + `connection${wsConnections.length === 1 ? '' : 's'} currently`)
 })
 
 app.post('/api/generatePaymentRequest', async (req: Request, res: Response, next: NextFunction) => {
@@ -141,7 +136,8 @@ const notifyClientPaidInvoice: notifyClientPaidInvoice = function (invoice, wsCl
           if (error) {
             console.log(`Error when sending "invoice-settlement" to client ${id}`, error)
           }
-        })
+        }
+      )
     }
   })
 }
@@ -157,11 +153,12 @@ const notifyClientDeliveryFailure: notifyClientDeliveryFailure = function (error
         JSON.stringify({
           type: 'delivery-failure',
           data: error.message,
-        }), (error) => {
-          if (error) {
-            console.error(`Error notify delivery failure to client ${id}`, error)
+        }), (err) => {
+          if (err) {
+            console.error(`Error notify delivery failure to client ${id}`, err)
           }
-        })
+        }
+      )
     }
   })
 }
@@ -195,7 +192,7 @@ const deliverCoffee: deliverCoffee = async (invoice: Invoice, wsClientIdFromInvo
 const createLndInvoiceStream: () => void = async function () {
   console.log('Opening LND invoice stream...')
 
-  // SubscribeInvoices returns a uni-directional stream (server -> client) for notifying the client of newly added/settled invoices
+  // SubscribeInvoices returns a uni-directional stream (server -> client)
   const subscribe: () => void = async function () {
     const lndInvoicesStream = await node.subscribeInvoices()
     lndInvoicesStream

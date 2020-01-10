@@ -1,10 +1,9 @@
 import React, {useCallback, useContext, useState} from 'react'
 import {Button, Col, Row} from 'reactstrap'
-import copy from '../assets/copy.svg'
 import QRCode from 'qrcode.react'
+import copy from '../assets/copy.svg'
 import {log} from '../helpers'
 import {ModalContext} from '../App'
-import {ProgressBar} from './ProgressBar'
 
 type Props = Payment
 
@@ -14,9 +13,9 @@ export const PaymentModal: React.FC<Props> = (
     chosenCoffee,
     invoiceValue,
     paymentRequest,
-  }) => {
-
-  const [,modalDispatch] = useContext(ModalContext)
+  },
+) => {
+  const [, modalDispatch] = useContext(ModalContext)
 
   /**
    * Used to toggle CSS class for 1 second
@@ -42,7 +41,7 @@ export const PaymentModal: React.FC<Props> = (
    */
   const setClipboard = useCallback((text) => {
     navigator.clipboard.writeText(text)
-      .then(function () {
+      .then(() => {
         log('Invoice copied to clipboard')
       })
       .catch((err) => {
@@ -53,9 +52,6 @@ export const PaymentModal: React.FC<Props> = (
 
   return (
     <>
-      <Row noGutters={true}>
-        <ProgressBar/>
-      </Row>
       <Row noGutters={true} className={'invoiceInfo'}>
         <Col xs={{size: 6}} className={'invoiceInfo-col1'}>
           <p>{chosenCoffee?.name}</p>
@@ -101,24 +97,24 @@ export const PaymentModal: React.FC<Props> = (
         >
           {'OPEN WITH YOUR WALLET'}
         </a>
-        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */ /* TODO */}
-        <a
-          className={`link monospace ${isCopyLinkActive ? 'actionLinksClicked' : ''}`}
+        <button
+          className={`link link--btn monospace ${isCopyLinkActive ? 'actionLinksClicked' : ''}`}
           id="copyIcon"
           onClick={() => {
             setClipboard(paymentRequest)
             activateCopyLink()
           }}
+          type="button"
         >
           <img src={copy} alt="copy icon"/>
           {'COPY'}
-        </a>
+        </button>
       </Row>
 
       <Row noGutters={true}>
         <Col xs={{size: 12}}>
           <Button
-            outline
+            outline={true}
             color="warning"
             onClick={() => {
               modalDispatch('CLOSE_MODAL')
@@ -131,7 +127,7 @@ export const PaymentModal: React.FC<Props> = (
       <Row noGutters={true}>
         <Col xs={{size: 12}}>
           <Button
-            outline
+            outline={true}
             color="info"
             onClick={() => modalDispatch('OPEN_NODE_INFO_MODAL')}
           >

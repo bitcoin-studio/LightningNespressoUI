@@ -6,6 +6,7 @@ import {ErrorModal} from './ErrorModal'
 import {NodeInfoModal} from './NodeInfoModal'
 import {InvoiceSettledModal} from './InvoiceSettledModal'
 import {ModalContext} from '../App'
+import {ProgressBar} from './ProgressBar'
 
 type Props = Payment & {
   nodeInfo: App['nodeInfo']
@@ -27,8 +28,8 @@ export const ModalContainer: React.FC<Props> = (
     nodeInfo,
     paymentRequest,
     wsConnect,
-  }) => {
-
+  },
+) => {
   let modalBody
   const [modalState, modalDispatch] = useContext(ModalContext)
 
@@ -41,13 +42,15 @@ export const ModalContainer: React.FC<Props> = (
           chosenCoffee={chosenCoffee}
           invoiceValue={invoiceValue}
           paymentRequest={paymentRequest}
-        />)
+        />
+      )
       break
     case modalState.nodeInfoModal:
       modalBody = (
         <NodeInfoModal
           nodeInfo={nodeInfo}
-        />)
+        />
+      )
       break
     case modalState.invoiceSettled:
       modalBody = <InvoiceSettledModal/>
@@ -58,14 +61,24 @@ export const ModalContainer: React.FC<Props> = (
           error={error}
           isWsConnected={isWsConnected}
           wsConnect={wsConnect}
-        />)
+        />
+      )
       break
+    default:
+      modalBody = (
+        <PaymentModal
+          btcEurPrice={btcEurPrice}
+          chosenCoffee={chosenCoffee}
+          invoiceValue={invoiceValue}
+          paymentRequest={paymentRequest}
+        />
+      )
   }
 
   // Check if at least one modal screen should be open
   const {isModalOpen, ...modals} = modalState
   const isOpen = Object.values(modals)
-    .some(v => v === true)
+    .some((v) => v === true)
 
   return (
     <div>
@@ -88,6 +101,14 @@ export const ModalContainer: React.FC<Props> = (
 
         <ModalBody>
           <Container>
+            {
+              (modalState.paymentModal || modalState.nodeInfoModal)
+              && (
+                <Row noGutters={true}>
+                  <ProgressBar/>
+                </Row>
+              )
+            }
             {modalBody}
           </Container>
         </ModalBody>

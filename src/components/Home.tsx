@@ -1,8 +1,8 @@
 import React, {Dispatch, SetStateAction, useContext, useEffect, useRef, useState} from 'react'
+import debounce from 'lodash.debounce'
 import data from '../data.json'
 import {ModalContainer} from './ModalContainer'
 import api from '../lib/api'
-import {debounce} from 'lodash'
 import {ModalContext} from '../App'
 import ethiopia from '../assets/coffees/ethiopia.png'
 import volluto from '../assets/coffees/volluto.png'
@@ -47,10 +47,9 @@ export const Home: React.FC<Props> = (
     setError,
     wsClientId,
     wsConnect,
-  }) => {
-
+  },
+) => {
   const [modalState, modalDispatch] = useContext(ModalContext)
-
 
   /**
    * Payment logic
@@ -61,36 +60,40 @@ export const Home: React.FC<Props> = (
   const [paymentRequest, setPaymentRequest] = useState<Payment['paymentRequest']>(null)
 
   // Handle payment
-  // ref has been necessary to force focus, because Firefox and Safari on Mac don't give focus to btn on click...
+  // ref has been necessary to force focus
+  // because Firefox and Safari on Mac don't give focus to btn on click...
   // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button#Clicking_and_focus#Clicking_and_focus
-  const _nodes: Map<number, any> = new Map()
+  const btnNodes: Map<number, any> = new Map()
   const forceFocus = (index: number) => {
-    const node = _nodes.get(index)
+    const node = btnNodes.get(index)
     node.focus()
   }
-  const debouncedGeneratePaymentRequest = useRef(debounce((chosenCoffee: Payment['chosenCoffee'], wsClientId: string) => {
-    (async () => {
+  const debouncedGeneratePaymentRequest = useRef(
+    debounce(async (_chosenCoffee: Payment['chosenCoffee'], _wsClientId: string) => {
       log('GENERATE PAYMENT REQUEST')
-      log('chosenCoffee', chosenCoffee)
-      setChosenCoffee(chosenCoffee)
+      log('chosenCoffee', _chosenCoffee)
+      setChosenCoffee(_chosenCoffee)
 
       try {
-        log(`Generate an invoice for ${chosenCoffee?.name}, row ${chosenCoffee?.id}`)
+        log(`Generate an invoice for ${_chosenCoffee?.name}, row ${_chosenCoffee?.id}`)
         let invoiceAmount: number
         if (process.env.REACT_APP_CURRENCY === '€') {
-          let prices = await api.getPrice()
-          let btcEurPrice = Number((prices.EUR).toFixed(0))
-          setBtcEurPrice(Number((prices.EUR).toFixed(0)))
-          log('Price BTCEUR ', btcEurPrice)
+          const prices = await api.getPrice()
+          const _btcEurPrice = Number((prices.EUR).toFixed(0))
+          setBtcEurPrice(_btcEurPrice)
+          log('Price BTCEUR ', _btcEurPrice)
+
           if (process.env.REACT_APP_TESTING === 'true') {
             invoiceAmount = 1
           } else {
-            invoiceAmount = Number(((Number(process.env.REACT_APP_PRICE) / btcEurPrice) * 10 ** 8).toFixed(0))
+            invoiceAmount = Number(((Number(process.env.REACT_APP_PRICE) / _btcEurPrice) * 10 ** 8)
+              .toFixed(0))
           }
-          log('Invoice amount (sats) ', invoiceAmount)
 
+          log('Invoice amount (sats) ', invoiceAmount)
           if (invoiceAmount > 20000) {
-            throw new Error('invoiceAmount greater than 20 000 sats')
+            console.error('invoiceAmount greater than 20 000 sats')
+            return
           }
         } else {
           // Fiat amount
@@ -98,7 +101,7 @@ export const Home: React.FC<Props> = (
         }
         setInvoiceValue(invoiceAmount)
 
-        let memo = `#${chosenCoffee?.id} ${chosenCoffee?.name} - The Block / @${wsClientId}`
+        const memo = `#${_chosenCoffee?.id} ${_chosenCoffee?.name} - The Block / @${_wsClientId}`
         const res = await api.generatePaymentRequest(memo, invoiceAmount)
         setPaymentRequest(res.paymentRequest)
         modalDispatch('OPEN_PAYMENT_MODAL')
@@ -106,8 +109,8 @@ export const Home: React.FC<Props> = (
         log(err.message)
         setError('Sorry, the application failed to generate your invoice.')
       }
-    })()
-  }, 3000, {leading: true, trailing: false})).current
+    }, 3000, {leading: true, trailing: false}),
+  ).current
 
   // Clear all payment state when modal is close
   useEffect(() => {
@@ -129,8 +132,8 @@ export const Home: React.FC<Props> = (
    */
   const currency = process.env.REACT_APP_CURRENCY === 'sats' ? ' sats' : process.env.REACT_APP_CURRENCY
 
-  let coffees = Object.keys(data)
-    .map(key => data[Number(key)])
+  const coffees = Object.keys(data)
+    .map((key) => data[Number(key)])
     .map((item, index) => (
       <div className={'coffee'} key={item.name}>
         <img src={images[index]} alt="Nespresso capsule"/>
@@ -139,19 +142,21 @@ export const Home: React.FC<Props> = (
         <div className={'intensity'}>
           <p className={'intensity__title'}>{'Intensity'}</p>
           <div className={'intensity__squares'}>
-            {Array.from(Array(12)).map((_, i) =>
-              <div className={`intensity__square ${i + 1 <= item.intensity ? 'intensity__square-active' : ''}`}
-                   key={`${i}_intensity`}>
-              </div>)
-            }
+            {Array.from(Array(12)).map((_, i) => (
+              <div
+                className={`intensity__square ${i + 1 <= item.intensity ? 'intensity__square-active' : ''}`}
+                // eslint-disable-next-line react/no-array-index-key
+                key={`intensity_${item.name}_${i}`}
+              />
+            ))}
           </div>
         </div>
 
         <button
           className={'buttonBuy'}
           tabIndex={index + 1}
-          key={`button_${index}`}
-          ref={c => _nodes.set(index, c)}
+          key={`button_${item.name}`}
+          ref={(c) => btnNodes.set(index, c)}
           type="button"
           onClick={() => {
             forceFocus(index)
@@ -160,8 +165,8 @@ export const Home: React.FC<Props> = (
         >
           {`Buy for ${process.env.REACT_APP_PRICE}${currency}`}
         </button>
-      </div>),
-    )
+      </div>
+    ))
 
   return (
     <>

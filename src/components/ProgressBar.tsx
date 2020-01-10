@@ -9,15 +9,14 @@ import {useInterval} from '../hooks'
  * Increase by 5 every 5 seconds during 5 minutes (300 seconds)
  */
 export const ProgressBar: React.FC = () => {
-
   const [, modalDispatch] = useContext(ModalContext)
   const [progress, setProgress] = useState(0)
 
   let seconds: number = 0
   useInterval(() => {
     seconds += 1
-    setProgress(prevState => prevState + Number((seconds / 3).toFixed(0)))
-    progress && log(`Waiting bar ${progress} %`)
+    setProgress((prevState) => prevState + Number((seconds / 3).toFixed(0)))
+    log(`Waiting bar ${progress} %`)
     if (progress >= 100) {
       modalDispatch('CLOSE_MODAL')
     }

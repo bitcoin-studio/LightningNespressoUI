@@ -1,6 +1,6 @@
 import {stringify} from 'query-string'
 
-type ApiMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+type ApiMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
 class API {
   url: string
@@ -37,7 +37,7 @@ class API {
 
   // Establish websocket connection with server
   getWebSocket() {
-    let wsUrl = this.url.replace('https', 'wss').replace('http', 'ws')
+    const wsUrl = this.url.replace('https', 'wss').replace('http', 'ws')
     return new WebSocket(`${wsUrl}/ws`)
   }
 
@@ -65,9 +65,8 @@ class API {
       method,
       headers,
       body,
-      //mode: 'no-cors'
     })
-      .then(async res => {
+      .then(async (res) => {
         if (!res.ok) {
           let errMsg
           try {
@@ -81,7 +80,7 @@ class API {
         }
         return res.json()
       })
-      .then(res => res.data as R)
+      .then((res) => res.data as R)
       .catch((err) => {
         console.error(`API error calling ${method} ${path}`, err)
         throw err

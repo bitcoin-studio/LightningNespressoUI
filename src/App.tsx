@@ -6,15 +6,15 @@ import api from './lib/api'
 import BitcoinStudioLogo from './assets/bitcoin-studio-black-border.svg'
 
 // TODO: Find proper type for context of reducer
-// Known bug on Partial. Values and functions from ModalContext get in addition to their type the type undefined
+// A known bug on Typescript Partial.
+// Values and functions from ModalContext get in addition to their type the type undefined
 // https://stackoverflow.com/questions/54489817/typescript-partialt-type-without-undefined
-//type ModalContext = Reducer<ModalState, ReducerAction<any>>
-//type ModalContext = Partial<Reducer<ModalState, ReducerAction<any>>>
+// type ModalContext = Reducer<ModalState, ReducerAction<any>>
+// type ModalContext = Partial<Reducer<ModalState, ReducerAction<any>>>
 type ModalContext = any
 export const ModalContext = React.createContext<ModalContext>({})
 
 export const App: React.FC = () => {
-
   let uiContent
   const [error, setError] = useState<App['error']>('')
   // Server state
@@ -34,8 +34,8 @@ export const App: React.FC = () => {
   }
 
   const modalReducer = useCallback((state: ModalState, action: string) => {
-    log("prevState: ", state)
-    log("action: ", action)
+    log('prevState: ', state)
+    log('action: ', action)
     switch (action) {
       case 'OPEN_ERROR_MODAL':
         return {
@@ -135,7 +135,7 @@ export const App: React.FC = () => {
       setError('The connection to the server has closed unexpectedly')
       modalDispatch('OPEN_ERROR_MODAL')
       const {readyState} = ev.currentTarget as any
-      readyState && log('readyState: ', readyState)
+      log('readyState: ', readyState)
     })
 
     socket.addEventListener('error', (ev: Event) => {
@@ -150,7 +150,7 @@ export const App: React.FC = () => {
     wsConnect()
       .then(async () => {
         log('Ask server LND node info...')
-        let info = await api.getNodeInfo()
+        const info = await api.getNodeInfo()
         log('LND node info', info)
         setNodeInfo(info)
       })
@@ -184,7 +184,7 @@ export const App: React.FC = () => {
   return (
     <div className="App">
       <div id="header">
-        <a href={'https://www.bitcoin-studio.com'} target={'_blank'}>
+        <a href={'https://www.bitcoin-studio.com'} rel="noopener noreferrer" target={'_blank'}>
           <img id={'BitcoinStudioLogo'} src={BitcoinStudioLogo} alt="Bitcoin Studio Logo"/>
         </a>
         <h1 className="App-title">CHOOSE YOUR COFFEE</h1>
@@ -195,7 +195,11 @@ export const App: React.FC = () => {
       </div>
 
       <div id="footer">
-        <p>Made By <a href="https://www.bitcoin-studio.com" target={'_blank'}>Bitcoin Studio</a> With Love ❤️</p>
+        <p>
+          {'Made By '}
+          <a href="https://www.bitcoin-studio.com" rel="noopener noreferrer" target={'_blank'}>Bitcoin Studio</a>
+          {' With Love ❤️'}
+        </p>
       </div>
     </div>
   )

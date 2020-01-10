@@ -12,7 +12,6 @@ type Props = {
  * Display all errors in a modal
  */
 export const ErrorModal: React.FC<Props> = ({error, isWsConnected, wsConnect}) => {
-
   const [, modalDispatch] = useContext(ModalContext)
 
   return (
@@ -23,8 +22,8 @@ export const ErrorModal: React.FC<Props> = ({error, isWsConnected, wsConnect}) =
       </p>
 
       <Button
-        block
-        outline
+        block={true}
+        outline={true}
         color="danger"
         onClick={() => {
           wsConnect()
@@ -39,8 +38,8 @@ export const ErrorModal: React.FC<Props> = ({error, isWsConnected, wsConnect}) =
       </Button>
 
       <Button
-        block
-        outline
+        block={true}
+        outline={true}
         color="danger"
         onClick={() => modalDispatch('CLOSE_MODAL')}
       >

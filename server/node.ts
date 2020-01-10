@@ -1,6 +1,7 @@
 import createLnRpc, {LnRpc} from '@radar/lnrpc'
 import {env} from './env'
 
+// eslint-disable-next-line import/no-mutable-exports
 export let node: LnRpc
 
 export const initNode: () => Promise<void> = async function () {
