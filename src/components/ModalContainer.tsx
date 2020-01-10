@@ -12,7 +12,7 @@ type Props = Payment & {
   nodeInfo: App['nodeInfo']
   error: App['error']
   isWsConnected: App['isWsConnected']
-  wsConnect: () => Promise<void>
+  wsConnect: () => void
 }
 
 /**

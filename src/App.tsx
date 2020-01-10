@@ -89,9 +89,9 @@ export const App: React.FC = () => {
    * Connect websocket
    * Update state on new data or error
    */
-  const wsConnect = useCallback(async () => {
+  const wsConnect = useCallback(() => {
     log('Establish websocket connection with the server...')
-    const socket = await api.getWebSocket()
+    const socket = api.getWebSocket()
 
     socket.addEventListener('open', (ev: Event) => {
       setIsWsConnected(true)
@@ -148,14 +148,14 @@ export const App: React.FC = () => {
   useEffect(() => {
     log('EFFECT WEBSOCKET CONNECTION')
     wsConnect()
-      .then(async () => {
-        log('Ask server LND node info...')
-        const info = await api.getNodeInfo()
+    log('Ask server LND node info...')
+    api.getNodeInfo()
+      .then((info) => {
         log('LND node info', info)
         setNodeInfo(info)
       })
-      .catch((err: string) => {
-        log(err)
+      .catch((err: Error) => {
+        console.error(err)
       })
   }, [wsConnect])
 

@@ -5,7 +5,7 @@ import {ModalContext} from '../App'
 type Props = {
   error: App['error']
   isWsConnected: App['isWsConnected']
-  wsConnect: () => Promise<void>
+  wsConnect: () => void
 }
 
 /**
@@ -27,11 +27,9 @@ export const ErrorModal: React.FC<Props> = ({error, isWsConnected, wsConnect}) =
         color="danger"
         onClick={() => {
           wsConnect()
-            .then(() => {
-              if (isWsConnected) {
-                modalDispatch('CLOSE_MODAL')
-              }
-            })
+          if (isWsConnected) {
+            modalDispatch('CLOSE_MODAL')
+          }
         }}
       >
         {'Try to reconnect'}

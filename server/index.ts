@@ -2,6 +2,7 @@ import express, {NextFunction, Request, Response} from 'express'
 import axios from 'axios'
 import retry from 'async-retry'
 import cors from 'cors'
+import {setIntervalAsync} from 'set-interval-async/dynamic'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import WebSocket from 'ws' // @types/ws
 import expressWs, {Application} from 'express-ws'
@@ -109,17 +110,6 @@ app.get('/', (req: Request, res: Response) => {
   res.send('You need to load the webpack-dev-server page, not the server page!')
 })
 
-// Check connection to LND instance or invoice stream by calling getInfo()
-type checkLnd = () => Promise<GetInfoResponse | Error>
-const checkLnd: checkLnd = async () => {
-  console.log('Check connection to LND instance...')
-  try {
-    return await node.getInfo()
-  } catch (err) {
-    return err
-  }
-}
-
 // Push invoice to client
 type notifyClientPaidInvoice = (invoice: Invoice, wsClientIdFromInvoice: string) => void
 const notifyClientPaidInvoice: notifyClientPaidInvoice = function (invoice, wsClientIdFromInvoice) {
@@ -136,7 +126,7 @@ const notifyClientPaidInvoice: notifyClientPaidInvoice = function (invoice, wsCl
           if (error) {
             console.log(`Error when sending "invoice-settlement" to client ${id}`, error)
           }
-        }
+        },
       )
     }
   })
@@ -157,49 +147,48 @@ const notifyClientDeliveryFailure: notifyClientDeliveryFailure = function (error
           if (err) {
             console.error(`Error notify delivery failure to client ${id}`, err)
           }
-        }
+        },
       )
     }
   })
 }
 
 // Call ESP8266 - Deliver coffee
-type deliverCoffee = (invoice: Invoice, wsClientIdFromInvoice: string) => Promise<void>
-const deliverCoffee: deliverCoffee = async (invoice: Invoice, wsClientIdFromInvoice: string) => {
+type deliverCoffee = (invoice: Invoice, wsClientIdFromInvoice: string) => void
+const deliverCoffee: deliverCoffee = (invoice: Invoice, wsClientIdFromInvoice: string) => {
   const id = invoice?.memo?.charAt(1)
   console.log(`Deliver coffee on rail ${id}`)
   const body = {coffee: id as string}
-  try {
-    await retry(async (bail, attemptNum) => {
-      console.log(`Attempt deliver coffee #${attemptNum}`)
-      await axios({
-        url: env.VENDING_MACHINE,
-        method: 'post',
-        data: JSON.stringify(body),
-        headers: {'Content-Type': 'application/json'},
-      })
-    }, {
-      retries: 5,
+  retry(async (bail, attemptNum) => {
+    console.log(`Attempt deliver coffee #${attemptNum}`)
+    await axios({
+      url: env.VENDING_MACHINE,
+      method: 'post',
+      data: JSON.stringify(body),
+      headers: {'Content-Type': 'application/json'},
     })
-    console.log('Request to vending machine sent')
-    notifyClientPaidInvoice(invoice, wsClientIdFromInvoice)
-  } catch (error) {
-    notifyClientDeliveryFailure(error, wsClientIdFromInvoice)
-    console.error(error.message)
-  }
+  }, {retries: 5})
+    .then(() => {
+      console.log('Request to vending machine sent')
+      notifyClientPaidInvoice(invoice, wsClientIdFromInvoice)
+    })
+    .catch((err) => {
+      notifyClientDeliveryFailure(err, wsClientIdFromInvoice)
+      console.error(err.message)
+    })
 }
 
-const createLndInvoiceStream: () => void = async function () {
+const createLndInvoiceStream: () => void = function () {
   console.log('Opening LND invoice stream...')
 
   // SubscribeInvoices returns a uni-directional stream (server -> client)
-  const subscribe: () => void = async function () {
-    const lndInvoicesStream = await node.subscribeInvoices()
+  const subscribe: () => void = () => {
+    const lndInvoicesStream = node.subscribeInvoices()
     lndInvoicesStream
       .on('data', (invoice: Invoice) => {
         // Skip unpaid / irrelevant invoice updates
         // Memo should start with '#'
-        if (!invoice.settled || !invoice.amtPaidSat || !invoice.memo || invoice.memo.charAt(0) !== '#') return
+        if (!invoice.settled || !invoice.amtPaidSat || !invoice.memo || !invoice.memo.startsWith('#')) return
 
         // Handle Invoice Settlement
         console.log(`Invoice settled - ${invoice.memo}`)
@@ -220,37 +209,41 @@ const createLndInvoiceStream: () => void = async function () {
       })
   }
 
-  await retry(async (bail, attemptNum) => {
+  retry(async (bail, attemptNum) => {
     console.log(`Attempt createLndInvoiceStream #${attemptNum}`)
-    await subscribe()
-    const nodeInfo = await checkLnd()
-    if (nodeInfo instanceof Error) {
-      throw new Error(nodeInfo.message)
-    } else {
-      console.log('LND invoice stream opened successfully')
-    }
+    subscribe()
+    console.log('Check connection to LND instance...')
+    await node.getInfo()
   }, {retries: 5})
+    .then(() => console.log('LND invoice stream opened successfully'))
+    .catch((err) => console.error(err))
 }
 
 // General server initialization
 const init: () => void = function () {
   console.log('Connecting to LND instance...')
   initNode()
-    .then(async () => {
-      const nodeInfo = await checkLnd()
-      if (nodeInfo instanceof Error) {
-        throw new Error(nodeInfo.message)
-      } else {
-        console.log('Node info ', nodeInfo)
-        console.log('Connected to LND instance!')
-      }
-      await createLndInvoiceStream()
+    .then(() => {
+      console.log('Check connection to LND instance...')
+      node.getInfo()
+        .then((nodeInfo: GetInfoResponse) => {
+          console.log('Node info ', nodeInfo)
+          console.log('Connected to LND instance!')
+        })
+        .catch((err) => console.error(err))
+    })
+    .then(() => {
+      createLndInvoiceStream()
       console.log('Starting server...')
-      await app.listen(env.SERVER_PORT, () => console.log(`API Server started at http://localhost:${env.SERVER_PORT}!`))
+      app.listen(env.SERVER_PORT, () => console.log(`API Server started at http://localhost:${env.SERVER_PORT}!`))
     })
     .then(() => {
       // Ping LND to keep stream open
-      setInterval(checkLnd, (1000 * 60 * 9))
+      setIntervalAsync(() => {
+        node.getInfo()
+          .then(() => console.log('Ping LND...'))
+          .catch((err) => console.error(err))
+      }, (1000 * 60 * 9))
     })
     .catch((err) => {
       console.error('Server initialization failed ', err)

@@ -33,7 +33,7 @@ type Props = {
   nodeInfo: App['nodeInfo']
   setError: Dispatch<SetStateAction<string>>
   wsClientId: App['wsClientId']
-  wsConnect: () => Promise<void>
+  wsConnect: () => void
 }
 
 /**
