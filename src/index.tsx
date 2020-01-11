@@ -2,13 +2,15 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './style.scss'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import log from 'loglevel'
 import {App} from './App'
 import * as serviceWorker from './serviceWorker'
 
 if (process.env.NODE_ENV === 'production') {
-  console.log('Looks like we are in production!')
+  log.setLevel('silent')
 } else {
-  console.log('Looks like we are in development mode!')
+  log.setLevel('trace')
+  log.info('Looks like we are in development mode!')
 }
 
 ReactDOM.render(

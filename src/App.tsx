@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useCallback, useReducer, Reducer} from 'react'
 import {Spinner} from 'reactstrap'
+import log from 'loglevel'
 import {Home} from './components/Home'
-import {log} from './helpers'
 import api from './lib/api'
 import BitcoinStudioLogo from './assets/bitcoin-studio-black-border.svg'
 
@@ -34,8 +34,8 @@ export const App: React.FC = () => {
   }
 
   const modalReducer = useCallback((state: ModalState, action: string) => {
-    log('prevState: ', state)
-    log('action: ', action)
+    log.debug('prevState: ', state)
+    log.debug('action: ', action)
     switch (action) {
       case 'OPEN_ERROR_MODAL':
         return {
@@ -90,72 +90,72 @@ export const App: React.FC = () => {
    * Update state on new data or error
    */
   const wsConnect = useCallback(() => {
-    log('Establish websocket connection with the server...')
+    log.info('Establish websocket connection with the server...')
     const socket = api.getWebSocket()
 
     socket.addEventListener('open', (ev: Event) => {
       setIsWsConnected(true)
       const {readyState} = ev.currentTarget as any
-      log('Websocket connected to server successfully')
-      log('readyState: ', readyState)
+      log.info('Websocket connected to server successfully')
+      log.debug('readyState: ', readyState)
     })
 
     socket.addEventListener('message', (ev: MessageEvent) => {
       try {
         const {readyState} = ev.currentTarget as any
         if (readyState !== 1) {
-          log('Websocket not ready. readyState', readyState)
+          log.warn('Websocket not ready. readyState', readyState)
           return
         }
         const msg = JSON.parse(ev.data.toString())
 
         // Get client id
         if (msg && msg.type === 'client-id') {
-          log('Client ID is', msg.data)
+          log.info('Websocket client ID is', msg.data)
           setWsClientId(msg.data)
         }
         // Invoice settlement
         if (msg && msg.type === 'invoice-settlement') {
-          log('Invoice settled!', msg.data)
+          log.info('Invoice settled!', msg.data)
           modalDispatch('OPEN_INVOICE_SETTLED_MODAL')
         }
         // Delivery failure
         if (msg && msg.type === 'delivery-failure') {
-          log('delivery failure', msg.data)
+          log.error('delivery failure', msg.data)
           setError(msg.data)
           modalDispatch('OPEN_ERROR_MODAL')
         }
       } catch (err) {
-        console.error('Websocket onmessage catch', err)
+        log.error('Websocket onmessage catch', err)
       }
     })
 
     socket.addEventListener('close', (ev: CloseEvent) => {
-      log('Websocket close event ', ev)
+      log.warn('Websocket close event ', ev)
       setError('The connection to the server has closed unexpectedly')
       modalDispatch('OPEN_ERROR_MODAL')
       const {readyState} = ev.currentTarget as any
-      log('readyState: ', readyState)
+      log.debug('readyState: ', readyState)
     })
 
     socket.addEventListener('error', (ev: Event) => {
-      console.error('Websocket connection error', ev)
+      log.error('Websocket connection error', ev)
       setError('Websocket connection error')
       modalDispatch('OPEN_ERROR_MODAL')
     })
   }, [])
 
   useEffect(() => {
-    log('EFFECT WEBSOCKET CONNECTION')
+    log.debug('EFFECT WEBSOCKET CONNECTION')
     wsConnect()
-    log('Ask server LND node info...')
+    log.info('Ask server LND node info...')
     api.getNodeInfo()
       .then((info) => {
-        log('LND node info', info)
+        log.info('LND node info', info)
         setNodeInfo(info)
       })
       .catch((err: Error) => {
-        console.error(err)
+        log.error(err)
       })
   }, [wsConnect])
 

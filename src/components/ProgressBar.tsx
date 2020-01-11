@@ -1,6 +1,6 @@
-import {Col, Progress} from 'reactstrap'
 import React, {useContext, useState} from 'react'
-import {log} from '../helpers'
+import log from 'loglevel'
+import {Col, Progress} from 'reactstrap'
 import {ModalContext} from '../App'
 import {useInterval} from '../hooks'
 
@@ -16,7 +16,7 @@ export const ProgressBar: React.FC = () => {
   useInterval(() => {
     seconds += 1
     setProgress((prevState) => prevState + Number((seconds / 3).toFixed(0)))
-    log(`Waiting bar ${progress} %`)
+    log.debug(`Waiting bar ${progress} %`)
     if (progress >= 100) {
       modalDispatch('CLOSE_MODAL')
     }

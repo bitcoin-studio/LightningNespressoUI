@@ -1,3 +1,4 @@
+import log from 'loglevel'
 import {stringify} from 'query-string'
 
 type ApiMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
@@ -82,11 +83,10 @@ class API {
       })
       .then((res) => res.data as R)
       .catch((err) => {
-        console.error(`API error calling ${method} ${path}`, err)
+        log.error(`API error calling ${method} ${path}`, err)
         throw err
       })
   }
 }
 
-// Export a default API that points at the REACT_APP_API_PATH environment variable
 export default new API(process.env.REACT_APP_API_PATH as string)

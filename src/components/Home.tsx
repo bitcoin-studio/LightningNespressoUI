@@ -1,4 +1,5 @@
 import React, {Dispatch, SetStateAction, useContext, useEffect, useRef, useState} from 'react'
+import log from 'loglevel'
 import debounce from 'lodash.debounce'
 import data from '../data.json'
 import {ModalContainer} from './ModalContainer'
@@ -9,7 +10,6 @@ import volluto from '../assets/coffees/volluto.png'
 import arpeggio from '../assets/coffees/arpeggio.png'
 import capriccio from '../assets/coffees/capriccio.png'
 import vivalto from '../assets/coffees/vivalto.png'
-import {log} from '../helpers'
 
 const images = [
   ethiopia,
@@ -70,18 +70,18 @@ export const Home: React.FC<Props> = (
   }
   const debouncedGeneratePaymentRequest = useRef(
     debounce(async (_chosenCoffee: Payment['chosenCoffee'], _wsClientId: string) => {
-      log('GENERATE PAYMENT REQUEST')
-      log('chosenCoffee', _chosenCoffee)
+      log.info('GENERATE PAYMENT REQUEST')
+      log.debug('chosenCoffee', _chosenCoffee)
       setChosenCoffee(_chosenCoffee)
 
       try {
-        log(`Generate an invoice for ${_chosenCoffee?.name}, row ${_chosenCoffee?.id}`)
+        log.debug(`Generate an invoice for ${_chosenCoffee?.name}, row ${_chosenCoffee?.id}`)
         let invoiceAmount: number
         if (process.env.REACT_APP_CURRENCY === '€') {
           const prices = await api.getPrice()
           const _btcEurPrice = Number((prices.EUR).toFixed(0))
           setBtcEurPrice(_btcEurPrice)
-          log('Price BTCEUR ', _btcEurPrice)
+          log.debug('Price BTCEUR ', _btcEurPrice)
 
           if (process.env.REACT_APP_TESTING === 'true') {
             invoiceAmount = 1
@@ -90,9 +90,9 @@ export const Home: React.FC<Props> = (
               .toFixed(0))
           }
 
-          log('Invoice amount (sats) ', invoiceAmount)
+          log.debug('Invoice amount (sats) ', invoiceAmount)
           if (invoiceAmount > 20000) {
-            console.error('invoiceAmount greater than 20 000 sats')
+            log.error('invoiceAmount greater than 20 000 sats')
             return
           }
         } else {
@@ -106,7 +106,7 @@ export const Home: React.FC<Props> = (
         setPaymentRequest(res.paymentRequest)
         modalDispatch('OPEN_PAYMENT_MODAL')
       } catch (err) {
-        log(err.message)
+        log.error(err.message)
         setError('Sorry, the application failed to generate your invoice.')
       }
     }, 3000, {leading: true, trailing: false}),
@@ -115,7 +115,7 @@ export const Home: React.FC<Props> = (
   // Clear all payment state when modal is close
   useEffect(() => {
     if (!modalState.isModalOpen) {
-      log('EFFECT CLEAR STATE WHEN MODAL IS CLOSE')
+      log.debug('EFFECT CLEAR STATE WHEN MODAL IS CLOSE')
       // Payment
       setBtcEurPrice(initialPaymentState.btcEurPriceInit)
       setChosenCoffee(initialPaymentState.chosenCoffeeInit)

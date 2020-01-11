@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 
 const result = dotenv.config()
-if (result.error instanceof Error) throw new Error(result.error.message)
+if (result.error) throw new Error(result.error.message)
 
 export const env = {
   SERVER_PORT: process.env.SERVER_PORT,

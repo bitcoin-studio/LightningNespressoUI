@@ -1,8 +1,8 @@
 import React, {useCallback, useContext, useState} from 'react'
+import log from 'loglevel'
 import {Button, Col, Row} from 'reactstrap'
 import QRCode from 'qrcode.react'
 import copy from '../assets/copy.svg'
-import {log} from '../helpers'
 import {ModalContext} from '../App'
 
 type Props = Payment
@@ -42,10 +42,10 @@ export const PaymentModal: React.FC<Props> = (
   const setClipboard = useCallback((text) => {
     navigator.clipboard.writeText(text)
       .then(() => {
-        log('Invoice copied to clipboard')
+        log.info('Invoice copied to clipboard')
       })
       .catch((err) => {
-        console.error('Invoice not copied to clipboard', err)
+        log.error('Invoice not copied to clipboard', err)
       })
   }, [])
 

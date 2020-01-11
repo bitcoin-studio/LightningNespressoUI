@@ -1,4 +1,5 @@
 import express, {NextFunction, Request, Response} from 'express'
+import log from 'loglevel'
 import axios from 'axios'
 import retry from 'async-retry'
 import cors from 'cors'
@@ -12,6 +13,9 @@ import {randomBytes} from 'crypto'
 import {env} from './env'
 import {initNode, node} from './node'
 
+// Set log level
+log.setLevel('trace')
+
 let wsConnections: { [x: string]: WebSocket }[] = []
 
 // Server configuration
@@ -23,7 +27,7 @@ app.use(bodyParser.json())
 // Websocket route
 app.ws('/api/ws', (ws: WebSocket) => {
   const wsClientId: string = randomBytes(2).toString('hex')
-  console.log(`New websocket connection open by client ${wsClientId}`)
+  log.info(`New websocket connection open by client ${wsClientId}`)
 
   // Send this key to client
   ws.send(JSON.stringify({
@@ -35,22 +39,22 @@ app.ws('/api/ws', (ws: WebSocket) => {
   const pingInterval = setInterval(() => ws.ping('heartbeat', false), 10000)
   ws.on('pong', (pingData) => {
     if (pingData.toString() !== 'heartbeat') {
-      console.log('Websocket pong not received')
+      log.error('Websocket pong not received')
     }
   })
 
   ws.addEventListener('error', (ErrorEvent) => {
-    console.log('Websocket error', ErrorEvent.error)
+    log.error('Websocket error', ErrorEvent.error)
   })
 
   ws.addEventListener('close', (e) => {
     if (e.wasClean) {
-      console.log(`Connection websocket ${wsClientId} closed normally`)
+      log.info(`Connection websocket ${wsClientId} closed normally`)
     } else {
-      console.log(`Connection websocket ${wsClientId} closed abnormally`)
-      console.log('Close code', e.code)
+      log.warn(`Connection websocket ${wsClientId} closed abnormally`)
+      log.warn('Close code', e.code)
     }
-    console.log(`Stop pinging client ${wsClientId}`)
+    log.debug(`Stop pinging client ${wsClientId}`)
     clearInterval(pingInterval)
 
     // Remove closing ws, return all the others
@@ -59,7 +63,7 @@ app.ws('/api/ws', (ws: WebSocket) => {
 
   // Store client connection
   wsConnections.push({[wsClientId]: ws})
-  console.log(`There ${wsConnections.length === 1 ? 'is' : 'are'} ${wsConnections.length} websocket `
+  log.info(`There ${wsConnections.length === 1 ? 'is' : 'are'} ${wsConnections.length} websocket `
     + `connection${wsConnections.length === 1 ? '' : 's'} currently`)
 })
 
@@ -67,7 +71,7 @@ app.post('/api/generatePaymentRequest', async (req: Request, res: Response, next
   try {
     const {memo, value} = req.body
     if (!memo || !value) {
-      console.error('Fields "memo" and "value" are required to create an invoice')
+      log.error('Fields "memo" and "value" are required to create an invoice')
       return
     }
     const invoice: Invoice = await node.addInvoice({
@@ -97,7 +101,7 @@ app.get('/api/getPrice', async (req: Request, res: Response, next: NextFunction)
 app.get('/api/getNodeInfo', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await retry(async (bail, attemptNum) => {
-      console.log(`Attempt getNodeInfo #${attemptNum}`)
+      log.debug(`Attempt getNodeInfo #${attemptNum}`)
       const info = await node.getInfo()
       res.json({data: info})
     }, {retries: 3})
@@ -116,15 +120,15 @@ const notifyClientPaidInvoice: notifyClientPaidInvoice = function (invoice, wsCl
   wsConnections.forEach((connection) => {
     const id = Object.keys(connection)[0]
     if (wsClientIdFromInvoice === id) {
-      console.log('Notify client', id)
-      console.log('Websocket readyState', connection[id].readyState)
+      log.info('Notify client', id)
+      log.debug('Websocket readyState', connection[id].readyState)
       connection[id].send(
         JSON.stringify({
           type: 'invoice-settlement',
           data: invoice,
         }), (error) => {
           if (error) {
-            console.log(`Error when sending "invoice-settlement" to client ${id}`, error)
+            log.error(`Error when sending "invoice-settlement" to client ${id}`, error)
           }
         },
       )
@@ -137,15 +141,15 @@ const notifyClientDeliveryFailure: notifyClientDeliveryFailure = function (error
   wsConnections.forEach((connection) => {
     const id = Object.keys(connection)[0]
     if (wsClientIdFromInvoice === id) {
-      console.log('Notify client delivery failure', id)
-      console.log('Websocket readyState', connection[id].readyState)
+      log.error('Notify client delivery failure', id)
+      log.debug('Websocket readyState', connection[id].readyState)
       connection[id].send(
         JSON.stringify({
           type: 'delivery-failure',
           data: error.message,
         }), (err) => {
           if (err) {
-            console.error(`Error notify delivery failure to client ${id}`, err)
+            log.error(`Error notify delivery failure to client ${id}`, err)
           }
         },
       )
@@ -157,10 +161,10 @@ const notifyClientDeliveryFailure: notifyClientDeliveryFailure = function (error
 type deliverCoffee = (invoice: Invoice, wsClientIdFromInvoice: string) => void
 const deliverCoffee: deliverCoffee = (invoice: Invoice, wsClientIdFromInvoice: string) => {
   const id = invoice?.memo?.charAt(1)
-  console.log(`Deliver coffee on rail ${id}`)
+  log.info(`Deliver coffee on rail ${id}`)
   const body = {coffee: id as string}
   retry(async (bail, attemptNum) => {
-    console.log(`Attempt deliver coffee #${attemptNum}`)
+    log.debug(`Attempt deliver coffee #${attemptNum}`)
     await axios({
       url: env.VENDING_MACHINE,
       method: 'post',
@@ -169,17 +173,17 @@ const deliverCoffee: deliverCoffee = (invoice: Invoice, wsClientIdFromInvoice: s
     })
   }, {retries: 5})
     .then(() => {
-      console.log('Request to vending machine sent')
+      log.info('Request to vending machine sent')
       notifyClientPaidInvoice(invoice, wsClientIdFromInvoice)
     })
     .catch((err) => {
       notifyClientDeliveryFailure(err, wsClientIdFromInvoice)
-      console.error(err.message)
+      log.error(err.message)
     })
 }
 
 const createLndInvoiceStream: () => void = function () {
-  console.log('Opening LND invoice stream...')
+  log.info('Opening LND invoice stream...')
 
   // SubscribeInvoices returns a uni-directional stream (server -> client)
   const subscribe: () => void = () => {
@@ -191,62 +195,62 @@ const createLndInvoiceStream: () => void = function () {
         if (!invoice.settled || !invoice.amtPaidSat || !invoice.memo || !invoice.memo.startsWith('#')) return
 
         // Handle Invoice Settlement
-        console.log(`Invoice settled - ${invoice.memo}`)
+        log.info(`Invoice settled - ${invoice.memo}`)
         const wsClientIdFromInvoice = invoice.memo.substr(invoice.memo.indexOf('@') + 1, 4)
         deliverCoffee(invoice, wsClientIdFromInvoice)
       })
       .on('status', (status) => {
-        console.log(`SubscribeInvoices status: ${status.details} - Code: ${status.code}`)
+        log.warn(`SubscribeInvoices status: ${status.details} - Code: ${status.code}`)
         // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
       })
       .on('error', (error: Error) => {
-        console.error(`SubscribeInvoices error: ${error}`)
+        log.error(`SubscribeInvoices error: ${error}`)
         createLndInvoiceStream()
       })
       .on('end', () => {
-        console.log('Stream end event. No more data to be consumed from lndInvoicesStream')
+        log.error('Stream end event. No more data to be consumed from lndInvoicesStream')
         createLndInvoiceStream()
       })
   }
 
   retry(async (bail, attemptNum) => {
-    console.log(`Attempt createLndInvoiceStream #${attemptNum}`)
+    log.debug(`Attempt createLndInvoiceStream #${attemptNum}`)
     subscribe()
-    console.log('Check connection to LND instance...')
+    log.debug('Check connection to LND instance...')
     await node.getInfo()
   }, {retries: 5})
-    .then(() => console.log('LND invoice stream opened successfully'))
-    .catch((err) => console.error(err))
+    .then(() => log.debug('LND invoice stream opened successfully'))
+    .catch((err) => log.error(err))
 }
 
 // General server initialization
 const init: () => void = function () {
-  console.log('Connecting to LND instance...')
+  log.info('Connecting to LND...')
   initNode()
     .then(() => {
-      console.log('Check connection to LND instance...')
+      log.debug('Check connection to LND...')
       node.getInfo()
         .then((nodeInfo: GetInfoResponse) => {
-          console.log('Node info ', nodeInfo)
-          console.log('Connected to LND instance!')
+          log.info('Node info ', nodeInfo)
+          log.info('Connected to LND instance!')
         })
-        .catch((err) => console.error(err))
+        .catch((err) => log.error(err))
     })
     .then(() => {
       createLndInvoiceStream()
-      console.log('Starting server...')
-      app.listen(env.SERVER_PORT, () => console.log(`API Server started at http://localhost:${env.SERVER_PORT}!`))
+      log.info('Starting server...')
+      app.listen(env.SERVER_PORT, () => log.info(`API Server started at http://localhost:${env.SERVER_PORT}!`))
     })
     .then(() => {
       // Ping LND to keep stream open
       setIntervalAsync(() => {
         node.getInfo()
-          .then(() => console.log('Ping LND...'))
-          .catch((err) => console.error(err))
+          .then(() => log.info('Ping LND...'))
+          .catch((err) => log.error(err))
       }, (1000 * 60 * 9))
     })
     .catch((err) => {
-      console.error('Server initialization failed ', err)
+      log.error('Server initialization failed ', err)
     })
 }
 init()
