@@ -60,7 +60,13 @@ export const PaymentModal: React.FC<Props> = (
           process.env.REACT_APP_CURRENCY === '€' ? (
             <Col xs={{size: 6}} className={'invoiceInfo-col2'}>
               <p>{`${invoiceValue} Sats (${process.env.REACT_APP_PRICE} EUR)`}</p>
-              <p>{`1 BTC = ${btcEurPrice} € (EUR)`}</p>
+              <p>
+                {'1 BTC = '}
+                <span>
+                  {btcEurPrice}
+                </span>
+                {' € (EUR)'}
+              </p>
             </Col>
           ) : (
             <></>

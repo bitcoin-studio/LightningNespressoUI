@@ -12,15 +12,21 @@
     "build": "yarn build:client && yarn build:server",
     "build:client": "react-scripts build",
     "build:server": "tsc --project server/tsconfig.json",
+    "cypress:open": "cypress open",
     "eject": "react-scripts eject",
     "lint": "concurrently -n client,server \"yarn lint:client\" \"yarn lint:server\"",
     "lint:client": "eslint --ext .ts,tsx src/",
     "lint:server": "eslint --ext .ts server/",
     "prod": "concurrently -n client,server \"serve -l 3000 build\" \"yarn start:server\"",
     "start": "concurrently --kill-others-on-fail -n client,server \"yarn start:client\" \"yarn start:server\"",
-    "start:client": "react-scripts start",
+    "start:client": "react-scripts -r @cypress/instrument-cra start",
     "start:server": "yarn lint:server && ts-node-dev --inspect --respawn --project ./server/tsconfig.json ./server/index.ts",
     "test": "react-scripts test"
+  },
+  "nyc": {
+    "exclude": [
+      "src/serviceWorker.ts"
+    ]
   },
   "author": {
     "name": "Stephane Roche",
@@ -61,6 +67,8 @@
     "set-interval-async": "^1.0.30"
   },
   "devDependencies": {
+    "@cypress/code-coverage": "^1.10.4",
+    "@cypress/instrument-cra": "^1.0.0",
     "@types/async-retry": "^1.4.1",
     "@types/cors": "^2.8.6",
     "@types/dotenv": "^8.2.0",
@@ -78,13 +86,17 @@
     "@typescript-eslint/parser": "2.x",
     "babel-eslint": "10.x",
     "concurrently": "^5.0.2",
+    "cypress": "^3.8.2",
     "eslint": "6.x",
     "eslint-config-airbnb-typescript": "^6.3.1",
     "eslint-plugin-import": "2.x",
     "eslint-plugin-jsx-a11y": "6.x",
     "eslint-plugin-react": "7.x",
     "eslint-plugin-react-hooks": "1.x",
+    "istanbul-lib-coverage": "^3.0.0",
     "node-sass": "^4.13.0",
+    "nyc": "^15.0.0",
+    "source-map-support": "^0.5.16",
     "ts-node-dev": "^1.0.0-pre.44",
     "typescript": "^3.7.4"
   }

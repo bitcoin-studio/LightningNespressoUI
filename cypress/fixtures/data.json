@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "name": "Master Origin Ethiopia",
+    "description": "Scent of orange blossom, but its notes of compote come from the drying of Arabica coffee cherries in the sun",
+    "image": "https://www.nespresso.com/ecom/medias/sys_master/public/10831332802590/C-0363-Ethiopia-2000x2000.png",
+    "intensity": 4
+  },
+  {
+    "id": 2,
+    "name": "Vivalto Lungo",
+    "description": "A balanced coffee made from a complex blend of separately roasted South American and East African Arabicas, combining roasted and subtle floral notes",
+    "image": "https://www.nespresso.com/ecom/medias/sys_master/public/10386858082334/C-0038-2000x2000.png",
+    "intensity": 4
+  },
+  {
+    "id": 3,
+    "name": "Capriccio Espresso",
+    "description": "A mix of Arabica from South America and a touch of Robusta, Capriccio is a rich espresso, with a very characteristic note of cereals",
+    "image": "https://www.nespresso.com/ecom/medias/sys_master/public/10386856116254/C-0003-2000x2000.png",
+    "intensity": 5
+  },
+  {
+    "id": 4,
+    "name": "Arpeggio Intenso",
+    "description": "Pure Arabica from South and Central America, very roasted, Arpeggio has an intense character and a dense body, reinforced by notes of cocoa",
+    "image": "https://www.nespresso.com/ecom/medias/sys_master/public/10386855919646/C-0001-2000x2000.png",
+    "intensity": 9
+  },
+  {
+    "id": 5,
+    "name": "Volluto Decaffeinato",
+    "description": "Delightfully sweet and smooth, the selected pure Arabica beans from South America are roasted to reveal the sweet biscuity, fresh and fruity notes",
+    "image": "../assets/coffees/volluto.png",
+    "intensity": 4
+  }
+]
