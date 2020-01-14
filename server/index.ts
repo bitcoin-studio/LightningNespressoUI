@@ -20,7 +20,12 @@ let wsConnections: { [x: string]: WebSocket }[] = []
 
 // Server configuration
 const app: Application = expressWs(express(), undefined, {wsOptions: {clientTracking: true}}).app
-app.use(cors({origin: ['https://www.bitcoin-studio.com']}))
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://www.bitcoin-studio.com',
+  ]
+}))
 app.use(bodyParser.json())
 // Security headers should be set at reverse proxy level
 

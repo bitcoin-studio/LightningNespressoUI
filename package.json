@@ -7,7 +7,7 @@
     "node": "=10"
   },
   "homepage": "https://coffee.bitcoin-studio.com",
-  "proxy": "http://localhost:3101",
+  "proxy": "http://localhost:4000",
   "scripts": {
     "build": "yarn build:client && yarn build:server",
     "build:client": "react-scripts build",
