@@ -94,6 +94,7 @@
     "eslint-plugin-react": "7.x",
     "eslint-plugin-react-hooks": "1.x",
     "istanbul-lib-coverage": "^3.0.0",
+    "mock-socket": "^9.0.3",
     "node-sass": "^4.13.0",
     "nyc": "^15.0.0",
     "source-map-support": "^0.5.16",

@@ -122,7 +122,7 @@ export const App: React.FC = () => {
         // Delivery failure
         if (msg && msg.type === 'delivery-failure') {
           log.error('delivery failure', msg.data)
-          setError(msg.data)
+          setError('Sorry, we\'re unable to deliver your coffee. Please check that the machine is properly connected')
           modalDispatch('OPEN_ERROR_MODAL')
         }
       } catch (err) {
