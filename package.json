@@ -13,6 +13,7 @@
     "build:client": "react-scripts build",
     "build:server": "tsc --project server/tsconfig.json",
     "cypress:open": "cypress open",
+    "dev": "start-test 3000 cypress:open",
     "eject": "react-scripts eject",
     "lint": "concurrently -n client,server \"yarn lint:client\" \"yarn lint:server\"",
     "lint:client": "eslint --ext .ts,tsx src/",
@@ -22,11 +23,6 @@
     "start:client": "react-scripts -r @cypress/instrument-cra start",
     "start:server": "yarn lint:server && ts-node-dev --inspect --respawn --project ./server/tsconfig.json ./server/index.ts",
     "test": "react-scripts test"
-  },
-  "nyc": {
-    "exclude": [
-      "src/serviceWorker.ts"
-    ]
   },
   "author": {
     "name": "Stephane Roche",
@@ -98,6 +94,7 @@
     "node-sass": "^4.13.0",
     "nyc": "^15.0.0",
     "source-map-support": "^0.5.16",
+    "start-server-and-test": "^1.10.6",
     "ts-node-dev": "^1.0.0-pre.44",
     "typescript": "^3.7.4"
   }
