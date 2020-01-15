@@ -7,7 +7,7 @@ import {App} from './App'
 import * as serviceWorker from './serviceWorker'
 
 if (process.env.NODE_ENV === 'production') {
-  log.setLevel('trace')
+  log.setLevel('silent')
 } else {
   log.setLevel('trace')
   log.info('Looks like we are in development mode!')
