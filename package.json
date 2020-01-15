@@ -9,7 +9,7 @@
   "homepage": "https://coffee.bitcoin-studio.com",
   "proxy": "http://localhost:4000",
   "scripts": {
-    "build": "yarn build:client && yarn build:server",
+    "build": "yarn lint && yarn build:client && yarn build:server",
     "build:client": "react-scripts build",
     "build:server": "tsc --project server/tsconfig.json",
     "cypress:open": "cypress open",

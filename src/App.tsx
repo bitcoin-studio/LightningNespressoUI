@@ -1,4 +1,5 @@
 import React, {useEffect, useState, useCallback, useReducer, Reducer} from 'react'
+import {Invoice} from '@radar/lnrpc'
 import {Spinner} from 'reactstrap'
 import log from 'loglevel'
 import {Home} from './components/Home'
@@ -107,22 +108,32 @@ export const App: React.FC = () => {
           log.warn('Websocket not ready. readyState', readyState)
           return
         }
-        const msg = JSON.parse(ev.data.toString())
+        const msg: {type: string; data: any} = JSON.parse(ev.data.toString())
 
         // Get client id
         if (msg && msg.type === 'client-id') {
           log.info('Websocket client ID is', msg.data)
-          setWsClientId(msg.data)
+          setWsClientId(msg.data as string)
         }
         // Invoice settlement
         if (msg && msg.type === 'invoice-settlement') {
-          log.info('Invoice settled!', msg.data)
+          log.info('Invoice settled!', msg.data as Invoice)
           modalDispatch('OPEN_INVOICE_SETTLED_MODAL')
         }
         // Delivery failure
         if (msg && msg.type === 'delivery-failure') {
-          log.error('delivery failure', msg.data)
+          log.error('delivery failure', msg.data as string)
           setError('Sorry, we\'re unable to deliver your coffee. Please check that the machine is properly connected')
+          modalDispatch('OPEN_ERROR_MODAL')
+        }
+        // Server/LND error
+        if (msg && msg.type === 'error') {
+          log.error('server/LND error', msg.data)
+          if (msg.data as number === 14) {
+            setError('Sorry, the Bitcoin node is unavailable.')
+          } else {
+            setError('Sorry, the server has an issue.')
+          }
           modalDispatch('OPEN_ERROR_MODAL')
         }
       } catch (err) {

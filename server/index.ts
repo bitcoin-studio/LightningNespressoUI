@@ -119,42 +119,25 @@ app.get('/', (req: Request, res: Response) => {
   res.send('You need to load the webpack-dev-server page, not the server page!')
 })
 
-// Push invoice to client
-type notifyClientPaidInvoice = (invoice: Invoice, wsClientIdFromInvoice: string) => void
-const notifyClientPaidInvoice: notifyClientPaidInvoice = function (invoice, wsClientIdFromInvoice) {
+// gRPC status codes
+// https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
+// TODO: Check type enforcement error.code
+type errorCode = string | undefined
+type wsEventType = 'delivery-failure' | 'invoice-settlement' | 'error'
+type notifyClient = (data: {msg: Invoice | errorCode, wsEventType: wsEventType}, wsClientId: string) => void
+const notifyClient: notifyClient = function (data, wsClientId) {
   wsConnections.forEach((connection) => {
     const id = Object.keys(connection)[0]
-    if (wsClientIdFromInvoice === id) {
-      log.info('Notify client', id)
+    if (wsClientId === id) {
+      log.debug('Notify client', id)
       log.debug('Websocket readyState', connection[id].readyState)
       connection[id].send(
         JSON.stringify({
-          type: 'invoice-settlement',
-          data: invoice,
-        }), (error) => {
-          if (error) {
-            log.error(`Error when sending "invoice-settlement" to client ${id}`, error)
-          }
-        },
-      )
-    }
-  })
-}
-
-type notifyClientDeliveryFailure = (error: { message: string }, wsClientIdFromInvoice: string) => void
-const notifyClientDeliveryFailure: notifyClientDeliveryFailure = function (error, wsClientIdFromInvoice) {
-  wsConnections.forEach((connection) => {
-    const id = Object.keys(connection)[0]
-    if (wsClientIdFromInvoice === id) {
-      log.error('Notify client delivery failure', id)
-      log.debug('Websocket readyState', connection[id].readyState)
-      connection[id].send(
-        JSON.stringify({
-          type: 'delivery-failure',
-          data: error.message,
+          type: data.wsEventType,
+          data: data.msg,
         }), (err) => {
           if (err) {
-            log.error(`Error notify delivery failure to client ${id}`, err)
+            log.error(`Failed to notify client ${id}`, err)
           }
         },
       )
@@ -176,13 +159,13 @@ const deliverCoffee: deliverCoffee = (invoice: Invoice, wsClientIdFromInvoice: s
       data: JSON.stringify(body),
       headers: {'Content-Type': 'application/json'},
     })
-  }, {retries: 5})
+  }, {retries: 3})
     .then(() => {
       log.info('Request to vending machine sent')
-      notifyClientPaidInvoice(invoice, wsClientIdFromInvoice)
+      notifyClient({msg: invoice, wsEventType: 'invoice-settlement'}, wsClientIdFromInvoice)
     })
     .catch((err) => {
-      notifyClientDeliveryFailure(err, wsClientIdFromInvoice)
+      notifyClient({msg: err, wsEventType: 'delivery-failure'}, wsClientIdFromInvoice)
       log.error(err.message)
     })
 }
@@ -208,13 +191,15 @@ const createLndInvoiceStream: () => void = function () {
         log.warn(`SubscribeInvoices status: ${status.details} - Code: ${status.code}`)
         // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
       })
-      .on('error', (error: Error) => {
+      .on('error', (error: NodeJS.ErrnoException) => {
         log.error(`SubscribeInvoices error: ${error}`)
-        createLndInvoiceStream()
+        // Broadcast to all ws clients
+        wsConnections.forEach((connection) => {
+          notifyClient({msg: error.code, wsEventType: 'error'}, Object.keys(connection)[0])
+        })
       })
       .on('end', () => {
         log.error('Stream end event. No more data to be consumed from lndInvoicesStream')
-        createLndInvoiceStream()
       })
   }
 
@@ -223,9 +208,12 @@ const createLndInvoiceStream: () => void = function () {
     subscribe()
     log.debug('Check connection to LND instance...')
     await node.getInfo()
-  }, {retries: 5})
+  }, {retries: 3})
     .then(() => log.debug('LND invoice stream opened successfully'))
-    .catch((err) => log.error(err))
+    .catch((err) => {
+      log.error('Catch retry createLndInvoiceStream')
+      log.error(err)
+    })
 }
 
 // General server initialization
