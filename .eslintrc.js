@@ -20,7 +20,7 @@ module.exports = {
     "import/no-cycle": ["off"],
     "import/prefer-default-export": ["off"],
     "max-len": ["warn", { "code": 120 }],
-    "no-console": "off", //TODO
+    "no-console": ["warn"],
     "no-underscore-dangle": ["off"],
     "object-curly-newline": ["off"],
     "object-curly-spacing": ["error", "never"],
