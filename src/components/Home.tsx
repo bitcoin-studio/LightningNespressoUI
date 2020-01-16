@@ -107,7 +107,11 @@ export const Home: React.FC<Props> = (
         modalDispatch('OPEN_PAYMENT_MODAL')
       } catch (err) {
         log.error(err.message)
-        setError('Sorry, the application failed to generate your invoice.')
+        setError(
+          'Sorry, the application failed to generate your invoice. \n'
+          + 'The merchant\'s Bitcoin node seems unavailable.'
+        )
+        modalDispatch('OPEN_ERROR_MODAL')
       }
     }, 3000, {leading: true, trailing: false}),
   ).current
