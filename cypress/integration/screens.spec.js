@@ -1,11 +1,17 @@
 describe('Screens', function () {
 
   beforeEach(() => {
-    cy.visit('/')
+    cy.visit('/', {
+      // Force fallback on XHR
+      // TODO: Watch issue https://github.com/cypress-io/cypress/issues/95
+      onBeforeLoad (win) {
+        delete win.fetch
+      },
+    })
   })
 
   it('Home page', function () {
-    cy.fixture('data.json').as('coffees')
+    cy.fixture('coffees.json').as('coffees')
     // Bitcoin Studio Logo
     cy.get('#header').find('img').should('be.visible')
     // Display five coffees
@@ -40,6 +46,28 @@ describe('Screens', function () {
     // Payment request
     cy.contains('BOLT 11 INVOICE')
     cy.get('.col-12 > .monospace').invoke('text').should('have.length', 265)
+  })
+
+  it('Fail payment request', function () {
+    cy.server()
+    cy.route({
+      method: 'POST',
+      url: 'api/generatePaymentRequest',
+      response: [],
+      status: 500,
+    })
+
+    // Network Payment request
+    cy.get(':nth-child(1) > .buttonBuy').click()
+
+    // Company logo
+    cy.get('.paymentModal .col-2').find('img').should('be.visible')
+    // Title
+    cy.get('.titleModal > p').contains('Lightning Nespresso')
+
+    cy.contains('Something went wrong!')
+    cy.contains('Sorry, the application failed to generate your invoice.')
+    cy.contains('The merchant\'s Bitcoin node seems unavailable.')
   })
 
   it('Close payment screen', function () {

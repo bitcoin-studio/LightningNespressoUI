@@ -96,6 +96,7 @@
     "source-map-support": "^0.5.16",
     "start-server-and-test": "^1.10.6",
     "ts-node-dev": "^1.0.0-pre.44",
-    "typescript": "^3.7.4"
+    "typescript": "^3.7.4",
+    "whatwg-fetch": "^3.0.0"
   }
 }
