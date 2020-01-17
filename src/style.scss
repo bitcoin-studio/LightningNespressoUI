@@ -16,26 +16,28 @@ $primary: #2d8c69;
 $secondary: #f1c40f;
 $tertiary: #212121;
 
-.App {
+#root {
   background-color: #f5f5f5d4;
   font-family: Merriweather, serif;
   display: grid;
   grid-template-rows: 150px auto auto;
   min-height: 100vh;
+}
 
-  &-title {
+header {
+  .header__title {
     text-align: center;
     margin: 15px 20px 30px 20px;
     color: $secondary;
     text-shadow: 3px 3px 0 $tertiary, -1px -1px 0 $tertiary, 1px -1px 0 $tertiary, -1px 1px 0 $tertiary, 1px 1px 0 $tertiary;
   }
-
+  
   img#BitcoinStudioLogo {
     position: absolute;
     align-items: start;
     top: 15px;
     left: 15px;
-
+    
     @media screen and (max-width: 576px) {
       & {
         top: 5px;
@@ -54,7 +56,7 @@ $tertiary: #212121;
       }
     }
   }
-
+  
   /*
   img#LiveStreamYouTube {
     display: block;
@@ -71,7 +73,7 @@ h1 {
   font-size: 3rem;
 }
 
-#cardContainer {
+main {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   margin: 0 5%;
@@ -265,7 +267,7 @@ h1 {
   }
 }
 
-#footer {
+footer {
   font-family: Merriweather, serif;
   font-size: 1.3rem;
   margin-bottom: 10px;
@@ -293,7 +295,7 @@ h1 {
 }
 
 /* Modals */
-.paymentModal {
+.app-modal {
   .row {
     margin-bottom: 10px;
   }

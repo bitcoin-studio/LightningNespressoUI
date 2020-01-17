@@ -85,6 +85,7 @@
     "cypress": "^3.8.2",
     "eslint": "6.x",
     "eslint-config-airbnb-typescript": "^6.3.1",
+    "eslint-plugin-cypress": "^2.8.1",
     "eslint-plugin-import": "2.x",
     "eslint-plugin-jsx-a11y": "6.x",
     "eslint-plugin-react": "7.x",

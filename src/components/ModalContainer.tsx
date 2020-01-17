@@ -81,21 +81,21 @@ export const ModalContainer: React.FC<Props> = (
     .some((v) => v === true)
 
   return (
-    <div>
+    <>
       <Modal
-        className={'paymentModal'}
+        className="app-modal"
         isOpen={isOpen}
         returnFocusAfterClose={false}
         toggle={() => {
           modalDispatch('CLOSE_MODAL')
         }}
       >
-        <Row noGutters={true}>
+        <Row data-testid="app-modal__header" noGutters={true}>
           <Col xs={{size: 2}}>
             <img src={logo} alt="logo"/>
           </Col>
-          <Col xs={{size: 10}} className={'titleModal'}>
-            <p>Lightning Nespresso</p>
+          <Col xs={{size: 10}} className="titleModal">
+            <p id="dialogTitle">Lightning Nespresso</p>
           </Col>
         </Row>
 
@@ -113,6 +113,6 @@ export const ModalContainer: React.FC<Props> = (
           </Container>
         </ModalBody>
       </Modal>
-    </div>
+    </>
   )
 }

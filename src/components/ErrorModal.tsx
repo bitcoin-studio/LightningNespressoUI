@@ -15,9 +15,9 @@ export const ErrorModal: React.FC<Props> = ({error, isWsConnected, wsConnect}) =
   const [, modalDispatch] = useContext(ModalContext)
 
   return (
-    <Alert className={'error-modal'} color="danger">
-      <h4 className={'alert-heading'}>{'Something went wrong!'}</h4>
-      <p className={'error-modal__message'}>
+    <Alert className="error-modal" color="danger">
+      <h4 className="alert-heading">Something went wrong!</h4>
+      <p className="error-modal__message">
         {error}
       </p>
 
@@ -32,7 +32,7 @@ export const ErrorModal: React.FC<Props> = ({error, isWsConnected, wsConnect}) =
           }
         }}
       >
-        {'Try to reconnect'}
+        Try to reconnect
       </Button>
 
       <Button
@@ -41,7 +41,7 @@ export const ErrorModal: React.FC<Props> = ({error, isWsConnected, wsConnect}) =
         color="danger"
         onClick={() => modalDispatch('CLOSE_MODAL')}
       >
-        {'Close'}
+        Close
       </Button>
     </Alert>
   )

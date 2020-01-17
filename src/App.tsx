@@ -3,8 +3,8 @@ import {Invoice} from '@radar/lnrpc'
 import {Spinner} from 'reactstrap'
 import log from 'loglevel'
 import {Home} from './components/Home'
+import {Layout} from './components/Layout'
 import api from './lib/api'
-import BitcoinStudioLogo from './assets/bitcoin-studio-black-border.svg'
 
 // TODO: Find proper type for context of reducer
 // A known bug on Typescript Partial.
@@ -193,25 +193,8 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="App">
-      <div id="header">
-        <a href={'https://www.bitcoin-studio.com'} rel="noopener noreferrer" target={'_blank'}>
-          <img id={'BitcoinStudioLogo'} src={BitcoinStudioLogo} alt="Bitcoin Studio Logo"/>
-        </a>
-        <h1 className="App-title">CHOOSE YOUR COFFEE</h1>
-      </div>
-
-      <div id="cardContainer">
-        {uiContent}
-      </div>
-
-      <div id="footer">
-        <p>
-          {'Made By '}
-          <a href="https://www.bitcoin-studio.com" rel="noopener noreferrer" target={'_blank'}>Bitcoin Studio</a>
-          {' With Love ❤️'}
-        </p>
-      </div>
-    </div>
+    <Layout>
+      {uiContent}
+    </Layout>
   )
 }

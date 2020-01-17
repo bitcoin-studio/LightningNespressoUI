@@ -109,7 +109,7 @@ export const Home: React.FC<Props> = (
         log.error(err.message)
         setError(
           'Sorry, the application failed to generate your invoice. \n'
-          + 'The merchant\'s Bitcoin node seems unavailable.'
+          + 'The merchant\'s Bitcoin node seems unavailable.',
         )
         modalDispatch('OPEN_ERROR_MODAL')
       }
@@ -136,45 +136,42 @@ export const Home: React.FC<Props> = (
    */
   const currency = process.env.REACT_APP_CURRENCY === 'sats' ? ' sats' : process.env.REACT_APP_CURRENCY
 
-  const coffees = Object.keys(data)
-    .map((key) => data[Number(key)])
-    .map((item, index) => (
-      <div className={'coffee'} key={item.name}>
-        <img src={images[index]} alt="Nespresso capsule"/>
-        <h2>{item.name}</h2>
-        <p>{item.description}</p>
-        <div className={'intensity'}>
-          <p className={'intensity__title'}>{'Intensity'}</p>
-          <div className={'intensity__squares'}>
-            {Array.from(Array(12)).map((_, i) => (
-              <div
-                className={`intensity__square ${i + 1 <= item.intensity ? 'intensity__square-active' : ''}`}
-                // eslint-disable-next-line react/no-array-index-key
-                key={`intensity_${item.name}_${i}`}
-              />
-            ))}
-          </div>
+  const coffees = data.map((item, index) => (
+    <div className="coffee" key={item.name}>
+      <img src={images[index]} alt="Nespresso capsule"/>
+      <h2>{item.name}</h2>
+      <p>{item.description}</p>
+      <div className="intensity">
+        <p className="intensity__title">Intensity</p>
+        <div className="intensity__squares">
+          {Array.from(Array(12)).map((_, i) => (
+            <div
+              className={`intensity__square ${i + 1 <= item.intensity ? 'intensity__square-active' : ''}`}
+              // eslint-disable-next-line react/no-array-index-key
+              key={`intensity_${item.name}_${i}`}
+            />
+          ))}
         </div>
-
-        <button
-          className={'buttonBuy'}
-          tabIndex={index + 1}
-          key={`button_${item.name}`}
-          ref={(c) => btnNodes.set(index, c)}
-          type="button"
-          onClick={() => {
-            forceFocus(index)
-            debouncedGeneratePaymentRequest({id: index + 1, name: item.name}, wsClientId)
-          }}
-        >
-          {`Buy for ${process.env.REACT_APP_PRICE}${currency}`}
-        </button>
       </div>
-    ))
+
+      <button
+        className="buttonBuy"
+        tabIndex={index + 1}
+        key={`button_${item.name}`}
+        ref={(c) => btnNodes.set(index, c)}
+        type="button"
+        onClick={() => {
+          forceFocus(index)
+          debouncedGeneratePaymentRequest({id: index + 1, name: item.name}, wsClientId)
+        }}
+      >
+        {`Buy for ${process.env.REACT_APP_PRICE}${currency}`}
+      </button>
+    </div>
+  ))
 
   return (
     <>
-
       {coffees}
 
       <ModalContainer

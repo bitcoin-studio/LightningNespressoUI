@@ -23,9 +23,9 @@ export const ProgressBar: React.FC = () => {
   }, 1000)
 
   return (
-    <Col xs={{size: 12}} className={'progressBar monospace'}>
+    <Col xs={{size: 12}} className="progressBar monospace">
       <Progress value={progress}>
-        <span className={'progress-bar__text'}>{'Awaiting Payment...'}</span>
+        <span className="progress-bar__text">Awaiting Payment...</span>
       </Progress>
     </Col>
   )

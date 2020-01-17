@@ -17,9 +17,9 @@ export const InvoiceSettledModal: React.FC = () => {
   }, 8000)
 
   return (
-    <div className={'invoice-settled'}>
-      <h2>{'Enjoy Your Coffee!'}</h2>
-      <img className={'invoice-settle__image'} src={randomImage} alt="enjoy"/>
+    <div className="invoice-settled">
+      <h2>Enjoy Your Coffee!</h2>
+      <img className="invoice-settle__image" src={randomImage} alt="enjoy"/>
       <Button
         outline={true}
         color="success"
@@ -27,7 +27,7 @@ export const InvoiceSettledModal: React.FC = () => {
           modalDispatch('CLOSE_MODAL')
         }}
       >
-        {'Close'}
+        Close
       </Button>
     </div>
   )

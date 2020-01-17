@@ -52,13 +52,13 @@ export const PaymentModal: React.FC<Props> = (
 
   return (
     <>
-      <Row noGutters={true} className={'invoiceInfo'}>
-        <Col xs={{size: 6}} className={'invoiceInfo-col1'}>
+      <Row noGutters={true} className="invoiceInfo">
+        <Col xs={{size: 6}} className="invoiceInfo-col1">
           <p>{chosenCoffee?.name}</p>
         </Col>
         {
           process.env.REACT_APP_CURRENCY === '€' ? (
-            <Col xs={{size: 6}} className={'invoiceInfo-col2'}>
+            <Col xs={{size: 6}} className="invoiceInfo-col2">
               <p>{`${invoiceValue} Sats (${process.env.REACT_APP_PRICE} EUR)`}</p>
               <p>
                 {'1 BTC = '}
@@ -76,9 +76,9 @@ export const PaymentModal: React.FC<Props> = (
       </Row>
       <Row noGutters={true}>
         <Col xs={{size: 6, offset: 3}}>
-          <div className={'qrcodeWrapper'}>
+          <div className="qrcodeWrapper">
             <QRCode
-              name={'payment request'}
+              name="payment request"
               value={paymentRequest ? paymentRequest.toUpperCase() : ''}
               style={{display: 'block', width: '100%', height: 'auto'}}
             />
@@ -87,8 +87,8 @@ export const PaymentModal: React.FC<Props> = (
       </Row>
       <Row noGutters={true}>
         <Col xs={{size: 12}}>
-          <h6>{'BOLT 11 INVOICE'}</h6>
-          <p className={'monospace'}>
+          <h6>BOLT 11 INVOICE</h6>
+          <p className="monospace">
             {paymentRequest}
           </p>
         </Col>
@@ -98,10 +98,10 @@ export const PaymentModal: React.FC<Props> = (
         <a
           className={`link monospace ${isOpenWalletLinkActive ? 'actionLinksClicked' : ''}`}
           href={`lightning:${paymentRequest}`}
-          id={'openWithWallet'}
+          id="openWithWallet"
           onClick={() => activateOpenWalletLink()}
         >
-          {'OPEN WITH YOUR WALLET'}
+          OPEN WITH YOUR WALLET
         </a>
         <button
           className={`link link--btn monospace ${isCopyLinkActive ? 'actionLinksClicked' : ''}`}
@@ -113,7 +113,7 @@ export const PaymentModal: React.FC<Props> = (
           type="button"
         >
           <img src={copy} alt="copy icon"/>
-          {'COPY'}
+          COPY
         </button>
       </Row>
 
@@ -126,7 +126,7 @@ export const PaymentModal: React.FC<Props> = (
               modalDispatch('CLOSE_MODAL')
             }}
           >
-            {'Cancel Payment'}
+            Cancel Payment
           </Button>
         </Col>
       </Row>
@@ -137,7 +137,7 @@ export const PaymentModal: React.FC<Props> = (
             color="info"
             onClick={() => modalDispatch('OPEN_NODE_INFO_MODAL')}
           >
-            {'Node Info'}
+            Node Info
           </Button>
         </Col>
       </Row>
