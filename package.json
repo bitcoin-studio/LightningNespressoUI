@@ -16,7 +16,7 @@
     "dev": "start-test 3000 cypress:open",
     "eject": "react-scripts eject",
     "lint": "concurrently -n client,server \"yarn lint:client\" \"yarn lint:server\"",
-    "lint:client": "eslint --ext .ts,tsx src/",
+    "lint:client": "eslint --ext .ts,.tsx src/",
     "lint:server": "eslint --ext .ts server/",
     "prod": "concurrently -n client,server \"serve -l 3000 build\" \"yarn start:server\"",
     "start": "concurrently --kill-others-on-fail -n client,server \"yarn start:client\" \"yarn start:server\"",
