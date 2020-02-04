@@ -28,9 +28,10 @@ module.exports = {
     'func-names': ['warn', 'as-needed'],
     'import/no-cycle': ['off'],
     'import/prefer-default-export': ['off'],
+    'prefer-arrow-callback': ['warn', {'allowNamedFunctions': true, 'allowUnboundThis': false}],
     'max-len': ['warn', {'code': 120}],
     'no-console': ['warn'],
-    "no-trailing-spaces": ["warn", { "skipBlankLines": true }],
+    'no-trailing-spaces': ['warn', { 'skipBlankLines': true }],
     'no-underscore-dangle': ['off'],
     'object-curly-newline': ['off'],
     'object-curly-spacing': ['error', 'never'],
@@ -39,24 +40,10 @@ module.exports = {
     'react/jsx-boolean-value': ['warn', 'always'],
     'react/jsx-curly-brace-presence': ['warn', {'props': 'never', 'children': 'never'}],
     'react/jsx-tag-spacing': ['warn', {'beforeSelfClosing': 'never'}],
-    "react-hooks/rules-of-hooks": ['warn'],
-    "react-hooks/exhaustive-deps": ['warn'],
+    'react-hooks/rules-of-hooks': ['warn'],
+    'react-hooks/exhaustive-deps': ['warn'],
     'react/prop-types': ['off'],
     'semi': ['warn', 'never'],
     'spaced-comment': ['warn', 'always', {'markers': ['/']}],
   },
 }
-/*
-// Disable ESLint
-module.exports = {
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaFeatures": {
-      "jsx": true
-    },
-    "ecmaVersion": 2019,
-    "sourceType": "module",
-    "project": "./tsconfig.json"
-  },
-}
-*/
