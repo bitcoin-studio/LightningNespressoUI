@@ -16,7 +16,8 @@ export const Layout: React.FC = ({children}) => (
 
     <footer>
       <p>
-        {'Made By '}
+        Made By
+        {' '}
         <a
           href="https://www.bitcoin-studio.com"
           rel="noopener noreferrer"
@@ -24,7 +25,8 @@ export const Layout: React.FC = ({children}) => (
         >
           Bitcoin Studio
         </a>
-        {' With Love ❤️'}
+        {' '}
+        With Love ❤️
       </p>
     </footer>
   </>
