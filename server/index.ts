@@ -1,17 +1,17 @@
 import express, {NextFunction, Request, Response} from 'express'
+import {createInvoice, getNode, subscribeToInvoices} from 'ln-service'
 import log from 'loglevel'
 import axios from 'axios'
 import retry from 'async-retry'
 import cors from 'cors'
-import {setIntervalAsync} from 'set-interval-async/dynamic'
+// import {setIntervalAsync} from 'set-interval-async/dynamic'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import WebSocket from 'ws' // @types/ws
 import expressWs, {Application} from 'express-ws'
 import bodyParser from 'body-parser'
-import {GetInfoResponse, Invoice} from '@radar/lnrpc'
 import {randomBytes} from 'crypto'
 import {env} from './env'
-import {initNode, node} from './node'
+import {initNode, lnd, nodePublicKey} from './node'
 
 // Set log level
 log.setLevel('trace')
@@ -79,14 +79,15 @@ app.post('/api/generatePaymentRequest', async (req: Request, res: Response, next
       log.error('Fields "memo" and "value" are required to create an invoice')
       return
     }
-    const invoice: Invoice = await node.addInvoice({
-      memo: memo,
-      value: (env.TESTING === 'true') ? '1' : String(value),
-      expiry: '300', // 5 minutes
+    const invoice: Invoice = await createInvoice({
+      lnd: lnd,
+      description: memo,
+      tokens: (env.TESTING === 'true') ? '1' : String(value),
+      expires_at: new Date(new Date().setMinutes(new Date().getMinutes() + 5)).toISOString(), // 5 minutes from now
     })
     res.json({
       data: {
-        paymentRequest: invoice.paymentRequest,
+        paymentRequest: invoice.request,
       },
     })
   } catch (err) {
@@ -107,7 +108,8 @@ app.get('/api/getNodeInfo', async (req: Request, res: Response, next: NextFuncti
   try {
     await retry(async (bail, attemptNum) => {
       log.debug(`Attempt getNodeInfo #${attemptNum}`)
-      const info = await node.getInfo()
+      const info = await getNode({lnd, public_key: nodePublicKey})
+      info.public_key = nodePublicKey
       res.json({data: info})
     }, {retries: 3})
   } catch (err) {
@@ -124,7 +126,7 @@ app.get('/', (req: Request, res: Response) => {
 // TODO: Check type enforcement error.code
 type errorCode = string | undefined
 type wsEventType = 'delivery-failure' | 'invoice-settlement' | 'error'
-type notifyClient = (data: {msg: Invoice | errorCode, wsEventType: wsEventType}, wsClientId: string) => void
+type notifyClient = (data: {msg: InvoiceEvent | errorCode, wsEventType: wsEventType}, wsClientId: string) => void
 const notifyClient: notifyClient = function (data, wsClientId) {
   wsConnections.forEach((connection) => {
     const id = Object.keys(connection)[0]
@@ -146,11 +148,10 @@ const notifyClient: notifyClient = function (data, wsClientId) {
 }
 
 // Call ESP8266 - Deliver coffee
-type deliverCoffee = (invoice: Invoice, wsClientIdFromInvoice: string) => void
-const deliverCoffee: deliverCoffee = (invoice: Invoice, wsClientIdFromInvoice: string) => {
-  const id = invoice?.memo?.charAt(1)
+const deliverCoffee = (invoiceEvent: InvoiceEvent, wsClientIdFromInvoice: string): void => {
+  const id = invoiceEvent?.description?.charAt(1)
   log.info(`Deliver coffee on rail ${id}`)
-  const body = {coffee: id as string}
+  const body = {coffee: id}
   retry(async (bail, attemptNum) => {
     log.debug(`Attempt deliver coffee #${attemptNum}`)
     await axios({
@@ -162,7 +163,7 @@ const deliverCoffee: deliverCoffee = (invoice: Invoice, wsClientIdFromInvoice: s
   }, {retries: 3})
     .then(() => {
       log.info('Request to vending machine sent')
-      notifyClient({msg: invoice, wsEventType: 'invoice-settlement'}, wsClientIdFromInvoice)
+      notifyClient({msg: invoiceEvent, wsEventType: 'invoice-settlement'}, wsClientIdFromInvoice)
     })
     .catch((err) => {
       notifyClient({msg: err, wsEventType: 'delivery-failure'}, wsClientIdFromInvoice)
@@ -175,19 +176,19 @@ const createLndInvoiceStream: () => void = function () {
 
   // SubscribeInvoices returns a uni-directional stream (server -> client)
   const subscribe: () => void = () => {
-    const lndInvoicesStream = node.subscribeInvoices()
+    const lndInvoicesStream = subscribeToInvoices({lnd})
     lndInvoicesStream
-      .on('data', (invoice: Invoice) => {
+      .on('invoice_updated', (invoiceEvent: InvoiceEvent) => {
         // Skip unpaid / irrelevant invoice updates
         // Memo should start with '#'
-        if (!invoice.settled || !invoice.amtPaidSat || !invoice.memo || !invoice.memo.startsWith('#')) return
+        if (!invoiceEvent.is_confirmed || !invoiceEvent.description.startsWith('#')) return
 
         // Handle Invoice Settlement
-        log.info(`Invoice settled - ${invoice.memo}`)
-        const wsClientIdFromInvoice = invoice.memo.substr(invoice.memo.indexOf('@') + 1, 4)
-        deliverCoffee(invoice, wsClientIdFromInvoice)
+        log.info(`Invoice settled - ${invoiceEvent.description}`)
+        const wsClientIdFromInvoice = invoiceEvent.description.substr(invoiceEvent.description.indexOf('@') + 1, 4)
+        deliverCoffee(invoiceEvent, wsClientIdFromInvoice)
       })
-      .on('status', (status) => {
+      .on('status', (status: { details: any; code: any }) => {
         log.warn(`SubscribeInvoices status: ${status.details} - Code: ${status.code}`)
         // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
       })
@@ -207,7 +208,7 @@ const createLndInvoiceStream: () => void = function () {
     log.debug(`Attempt createLndInvoiceStream #${attemptNum}`)
     subscribe()
     log.debug('Check connection to LND instance...')
-    await node.getInfo()
+    await getNode({lnd, public_key: nodePublicKey})
   }, {retries: 3})
     .then(() => log.debug('LND invoice stream opened successfully'))
     .catch((err) => {
@@ -222,12 +223,12 @@ const init: () => void = function () {
   initNode()
     .then(() => {
       log.debug('Check connection to LND...')
-      node.getInfo()
-        .then((nodeInfo: GetInfoResponse) => {
+      getNode({lnd, public_key: nodePublicKey})
+        .then((nodeInfo: any) => {
           log.info('Node info ', nodeInfo)
           log.info('Connected to LND instance!')
         })
-        .catch((err) => log.error(err))
+        .catch((err: any) => log.error(err))
     })
     .then(() => {
       createLndInvoiceStream()
@@ -236,11 +237,13 @@ const init: () => void = function () {
     })
     .then(() => {
       // Ping LND to keep stream open
+      /*
       setIntervalAsync(() => {
-        node.getInfo()
+        getNode({lnd, public_key: nodePublicKey})
           .then(() => log.info('Ping LND...'))
-          .catch((err) => log.error(err))
+          .catch((err: any) => log.error(err))
       }, (1000 * 60 * 9))
+      */
     })
     .catch((err) => {
       log.error('Server initialization failed ', err)

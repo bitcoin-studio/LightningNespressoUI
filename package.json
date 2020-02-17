@@ -43,7 +43,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@radar/lnrpc": "^0.8.2-beta",
     "async-retry": "^1.3.1",
     "axios": "^0.19.1",
     "body-parser": "^1.19.0",
@@ -52,6 +51,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
+    "ln-service": "^47.14.7",
     "lodash.debounce": "^4.0.8",
     "loglevel": "^1.6.6",
     "qrcode.react": "^1.0.0",

@@ -1,5 +1,4 @@
 import React, {useEffect, useState, useCallback, useReducer, Reducer} from 'react'
-import {Invoice} from '@radar/lnrpc'
 import {Spinner} from 'reactstrap'
 import log from 'loglevel'
 import {Home} from './components/Home'
@@ -117,7 +116,7 @@ export const App: React.FC = () => {
         }
         // Invoice settlement
         if (msg && msg.type === 'invoice-settlement') {
-          log.info('Invoice settled!', msg.data as Invoice)
+          log.info('Invoice settled!', msg.data as InvoiceEvent)
           modalDispatch('OPEN_INVOICE_SETTLED_MODAL')
         }
         // Delivery failure

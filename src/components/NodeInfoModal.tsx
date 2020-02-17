@@ -30,7 +30,7 @@ export const NodeInfoModal: React.FC<Props> = ({nodeInfo}) => {
         <Col xs={{size: 12}}>
           <h6>Node ID</h6>
           <p className="monospace">
-            {`${nodeInfo?.uris[0]}`}
+            {`${nodeInfo?.public_key}@${nodeInfo?.sockets[0].socket}`}
           </p>
         </Col>
       </Row>
@@ -41,7 +41,7 @@ export const NodeInfoModal: React.FC<Props> = ({nodeInfo}) => {
           <div className="qrcodeWrapper">
             <QRCode
               name="payment request"
-              value={`${nodeInfo?.uris[0]}`}
+              value={`${nodeInfo?.public_key}@${nodeInfo?.sockets[0].socket}`}
               style={{display: 'block', width: '100%', height: 'auto'}}
             />
           </div>

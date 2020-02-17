@@ -2,7 +2,7 @@ type App = {
   wsClientId: string
   error: string
   isWsConnected: boolean
-  nodeInfo: {uris: [string], alias: string} | null
+  nodeInfo: {sockets: [{socket: string}], alias: string, public_key: string} | null
   isModalOpen: boolean
   errorModal: boolean
   nodeInfoModal: boolean
@@ -22,4 +22,25 @@ type ModalState = {
   invoiceSettled: boolean
   nodeInfoModal: boolean
   paymentModal: boolean
+}
+
+type Invoice = {
+  chain_address?: string
+  created_at: Date
+  description: string
+  id: string
+  request: string
+  secret: string
+  tokens: number
+}
+
+type InvoiceEvent = {
+  is_confirmed?: any
+  description: any
+  chain_address?: string | undefined
+  created_at?: Date
+  id?: string
+  request?: string
+  secret?: string
+  tokens?: number
 }
