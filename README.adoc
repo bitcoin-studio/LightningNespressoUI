@@ -7,11 +7,11 @@ Select your coffee, pay with Bitcoin (via Lightning Network), and the vending ma
 
 This repository is the Bitcoin point of sale terminal code for the simple non-BTCPay version of https://github.com/bitcoin-studio/LightningNespressoServer[LightningNespressoServer].
 
-The server of this web application is using https://github.com/RadarTech/lnrpc[lnrpc], a Typescript gRPC client for LND that
-allows us to connect to a Bitcoin/LND node and produce BOLT 11 Lightning Network invoices.
+When an invoice has been paid, the server notifies the client via websocket and sends a request to the vending machine which delivers the Nespresso capsule.
 
-When an invoice has been paid, the server notifies the client via websocket and sends a request to the vending machine which delivers the
-Nespresso capsule.
+* master branch is for a server hosted remotely
+* rpi branch is for Raspberry Pi hosting server locally
+
 
 == See also
 
