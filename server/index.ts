@@ -4,7 +4,7 @@ import log from 'loglevel'
 import axios from 'axios'
 import retry from 'async-retry'
 import cors from 'cors'
-// import {setIntervalAsync} from 'set-interval-async/dynamic'
+import {setIntervalAsync} from 'set-interval-async/dynamic'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import WebSocket from 'ws' // @types/ws
 import expressWs, {Application} from 'express-ws'
@@ -237,13 +237,11 @@ const init: () => void = function () {
     })
     .then(() => {
       // Ping LND to keep stream open
-      /*
       setIntervalAsync(() => {
         getNode({lnd, public_key: nodePublicKey})
           .then(() => log.info('Ping LND...'))
           .catch((err: any) => log.error(err))
       }, (1000 * 60 * 9))
-      */
     })
     .catch((err) => {
       log.error('Server initialization failed ', err)
