@@ -13,16 +13,15 @@
     "build:client": "react-scripts build",
     "build:server": "tsc --project server/tsconfig.json",
     "cypress:open": "cypress open",
-    "dev": "start-test 3000 cypress:open",
+    "dev": "concurrently --kill-others-on-fail -n client,server \"yarn dev:client\" \"yarn dev:server\"",
+    "dev:client": "react-scripts -r @cypress/instrument-cra start",
+    "dev:server": "yarn lint:server && ts-node-dev --inspect --respawn --project ./server/tsconfig.json ./server/index.ts",
+    "dev:fakeprod": "concurrently -n client,server \"serve -l 3000 build\" \"yarn dev:server\"",
     "eject": "react-scripts eject",
     "lint": "concurrently -n client,server \"yarn lint:client\" \"yarn lint:server\"",
     "lint:client": "eslint --ext .ts,.tsx src/",
     "lint:server": "eslint --ext .ts server/",
-    "prod": "concurrently -n client,server \"serve -l 3000 build\" \"yarn start:server\"",
-    "start": "concurrently --kill-others-on-fail -n client,server \"yarn start:client\" \"yarn start:server\"",
-    "start:client": "react-scripts -r @cypress/instrument-cra start",
-    "start:server": "yarn lint:server && ts-node-dev --inspect --respawn --project ./server/tsconfig.json ./server/index.ts",
-    "test": "react-scripts test"
+    "test": "start-test 3000 cypress:open"
   },
   "author": {
     "name": "Stephane Roche",
