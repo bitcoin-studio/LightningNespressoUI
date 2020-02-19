@@ -10,6 +10,7 @@ import WebSocket from 'ws' // @types/ws
 import expressWs, {Application} from 'express-ws'
 import bodyParser from 'body-parser'
 import {randomBytes} from 'crypto'
+import path from 'path'
 import {env} from './env'
 import {initNode, lnd, nodePublicKey} from './node'
 
@@ -20,14 +21,18 @@ let wsConnections: { [x: string]: WebSocket }[] = []
 
 // Server configuration
 const app: Application = expressWs(express(), undefined, {wsOptions: {clientTracking: true}}).app
+
+// Serve any static files
+app.use(express.static(path.resolve(__dirname, '..')))
+
+// Security headers should be set at reverse proxy level
 app.use(cors({
   origin: [
-    'http://localhost:3000',
-    'https://www.bitcoin-studio.com',
+    'http://localhost:3000', // dev
   ]
 }))
+
 app.use(bodyParser.json())
-// Security headers should be set at reverse proxy level
 
 // Websocket route
 app.ws('/api/ws', (ws: WebSocket) => {
@@ -117,8 +122,9 @@ app.get('/api/getNodeInfo', async (req: Request, res: Response, next: NextFuncti
   }
 })
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('You need to load the webpack-dev-server page, not the server page!')
+// All remaining requests return the React app, so it can handle routing.
+app.get('*', (request: Request, response: Response) => {
+  response.sendFile(path.resolve(__dirname, '..', 'index.html'))
 })
 
 // gRPC status codes
