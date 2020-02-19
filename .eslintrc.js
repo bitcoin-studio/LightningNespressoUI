@@ -2,7 +2,6 @@ module.exports = {
   'extends': [
     'airbnb-typescript',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    'plugin:cypress/recommended',
     'plugin:import/errors',
     'plugin:import/warnings',
     'plugin:jsx-a11y/recommended',
@@ -16,7 +15,6 @@ module.exports = {
     'tsconfigRootDir': __dirname,
   },
   'plugins': [
-    'cypress',
     'jsx-a11y',
     'import',
     'react',

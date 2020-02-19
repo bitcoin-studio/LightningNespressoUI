@@ -25,7 +25,6 @@
   },
   "include": [
     "src",
-    "global.d.ts",
-    "cypress/integration/**/*.js"
+    "global.d.ts"
   ]
 }

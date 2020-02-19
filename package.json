@@ -12,16 +12,14 @@
     "build": "npm run lint && npm run build:client && npm run build:server",
     "build:client": "react-scripts build",
     "build:server": "tsc --project server/tsconfig.json",
-    "cypress:open": "cypress open",
     "dev": "concurrently --kill-others-on-fail -n client,server \"npm run dev:client\" \"npm run dev:server\"",
-    "dev:client": "react-scripts -r @cypress/instrument-cra start",
+    "dev:client": "react-scripts start",
     "dev:server": "npm run lint:server && ts-node-dev --inspect --respawn --project ./server/tsconfig.json ./server/index.ts",
     "dev:fakeprod": "concurrently -n client,server \"serve -l 3000 build\" \"npm run dev:server\"",
     "eject": "react-scripts eject",
     "lint": "concurrently -n client,server \"npm run lint:client\" \"npm run lint:server\"",
     "lint:client": "eslint --ext .ts,.tsx src/",
-    "lint:server": "eslint --ext .ts server/",
-    "test": "start-test 3000 cypress:open"
+    "lint:server": "eslint --ext .ts server/"
   },
   "author": {
     "name": "Stephane Roche",
@@ -62,8 +60,6 @@
     "set-interval-async": "^1.0.30"
   },
   "devDependencies": {
-    "@cypress/code-coverage": "^1.10.4",
-    "@cypress/instrument-cra": "^1.0.0",
     "@types/async-retry": "^1.4.1",
     "@types/cors": "^2.8.6",
     "@types/dotenv": "^8.2.0",
@@ -81,10 +77,8 @@
     "@typescript-eslint/parser": "2.x",
     "babel-eslint": "10.x",
     "concurrently": "^5.0.2",
-    "cypress": "^3.8.2",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-typescript": "^6.3.1",
-    "eslint-plugin-cypress": "^2.8.1",
     "eslint-plugin-import": "2.x",
     "eslint-plugin-jsx-a11y": "6.x",
     "eslint-plugin-react": "^7.18.3",
