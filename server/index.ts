@@ -13,6 +13,7 @@ import {randomBytes} from 'crypto'
 import path from 'path'
 import {env} from './env'
 import {initNode, lnd, nodePublicKey} from './node'
+import {activateServo} from './servos'
 
 // Set log level
 log.setLevel('trace')
@@ -157,7 +158,10 @@ const notifyClient: notifyClient = function (data, wsClientId) {
 const deliverCoffee = (invoiceEvent: InvoiceEvent, wsClientIdFromInvoice: string): void => {
   const id = invoiceEvent?.description?.charAt(1)
   log.info(`Deliver coffee on rail ${id}`)
-  const body = {coffee: id}
+  // const body = {coffee: id}
+  activateServo()
+  console.log('wsClientIdFromInvoice', wsClientIdFromInvoice)
+  /*
   retry(async (bail, attemptNum) => {
     log.debug(`Attempt deliver coffee #${attemptNum}`)
     await axios({
@@ -175,6 +179,7 @@ const deliverCoffee = (invoiceEvent: InvoiceEvent, wsClientIdFromInvoice: string
       notifyClient({msg: err, wsEventType: 'delivery-failure'}, wsClientIdFromInvoice)
       log.error(err.message)
     })
+   */
 }
 
 const createLndInvoiceStream: () => void = function () {
