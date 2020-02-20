@@ -1,7 +1,6 @@
 import {Gpio} from 'pigpio'
 
 const motor = new Gpio(10, {mode: Gpio.OUTPUT})
-
 let pulseWidth = 1000
 let increment = 100
 
