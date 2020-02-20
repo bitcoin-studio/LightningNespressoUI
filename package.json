@@ -85,14 +85,7 @@
     "eslint-plugin-jsx-a11y": "6.x",
     "eslint-plugin-react": "^7.18.3",
     "eslint-plugin-react-hooks": "1.x",
-    "istanbul-lib-coverage": "^3.0.0",
-    "mock-socket": "^9.0.3",
-    "node-sass": "^4.13.0",
-    "nyc": "^15.0.0",
-    "source-map-support": "^0.5.16",
-    "start-server-and-test": "^1.10.6",
     "ts-node-dev": "^1.0.0-pre.44",
-    "typescript": "^3.7.4",
-    "whatwg-fetch": "^3.0.0"
+    "typescript": "^3.7.4"
   }
 }
