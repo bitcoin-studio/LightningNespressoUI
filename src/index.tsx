@@ -1,5 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
-import './style.scss'
+import './style.css'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import log from 'loglevel'
