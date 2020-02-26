@@ -155,31 +155,18 @@ const notifyClient: notifyClient = function (data, wsClientId) {
 }
 
 // Call ESP8266 - Deliver coffee
-const deliverCoffee = (invoiceEvent: InvoiceEvent, wsClientIdFromInvoice: string): void => {
-  const id = invoiceEvent?.description?.charAt(1)
+const deliverCoffee = async (invoiceEvent: InvoiceEvent, wsClientIdFromInvoice: string): Promise<any> => {
+  const id = Number(invoiceEvent?.description?.charAt(1))
   log.info(`Deliver coffee on rail ${id}`)
-  // const body = {coffee: id}
-  activateServo()
-  console.log('wsClientIdFromInvoice', wsClientIdFromInvoice)
-  /*
-  retry(async (bail, attemptNum) => {
-    log.debug(`Attempt deliver coffee #${attemptNum}`)
-    await axios({
-      url: env.VENDING_MACHINE,
-      method: 'post',
-      data: JSON.stringify(body),
-      headers: {'Content-Type': 'application/json'},
-    })
-  }, {retries: 3})
+  await activateServo(id)
     .then(() => {
-      log.info('Request to vending machine sent')
+      log.info('Capsule delivered')
       notifyClient({msg: invoiceEvent, wsEventType: 'invoice-settlement'}, wsClientIdFromInvoice)
     })
     .catch((err) => {
       notifyClient({msg: err, wsEventType: 'delivery-failure'}, wsClientIdFromInvoice)
       log.error(err.message)
     })
-   */
 }
 
 const createLndInvoiceStream: () => void = function () {
