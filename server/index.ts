@@ -1,4 +1,6 @@
 import express, {NextFunction, Request, Response} from 'express'
+import https from 'https'
+import fs from 'fs'
 import {createInvoice, getNode, subscribeToInvoices} from 'ln-service'
 import log from 'loglevel'
 import axios from 'axios'
@@ -21,7 +23,13 @@ log.setLevel('trace')
 let wsConnections: { [x: string]: WebSocket }[] = []
 
 // Server configuration
-const app: Application = expressWs(express(), undefined, {wsOptions: {clientTracking: true}}).app
+const options = {
+  key: fs.readFileSync('key_coffee.pem'),
+  cert: fs.readFileSync('cert_coffee.pem')
+}
+const exp = express()
+const server = https.createServer(options, exp)
+const app: Application = expressWs(exp, server, {wsOptions: {clientTracking: true}}).app
 
 // Serve any static files
 app.use(express.static(path.resolve(__dirname, '..')))
