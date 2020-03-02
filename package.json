@@ -7,7 +7,7 @@
     "node": "=10"
   },
   "homepage": "https://coffee.bitcoin-studio.com",
-  "proxy": "http://localhost:4000",
+  "proxy": "https://localhost:4000",
   "scripts": {
     "build": "npm run lint && npm run build:client && npm run build:server",
     "build:client": "react-scripts build",
@@ -15,11 +15,11 @@
     "dev": "concurrently --kill-others-on-fail -n client,server \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "react-scripts start",
     "dev:server": "npm run lint:server && ts-node-dev --inspect --respawn --project ./server/tsconfig.json ./server/index.ts",
-    "dev:fakeprod": "concurrently -n client,server \"serve -l 3000 build\" \"npm run dev:server\"",
     "eject": "react-scripts eject",
     "lint": "concurrently -n client,server \"npm run lint:client\" \"npm run lint:server\"",
     "lint:client": "eslint --ext .ts,.tsx src/",
-    "lint:server": "eslint --ext .ts server/"
+    "lint:server": "eslint --ext .ts server/",
+    "start": "node build/server/index.js"
   },
   "author": {
     "name": "Stephane Roche",
@@ -57,7 +57,7 @@
     "query-string": "^6.9.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
-    "react-scripts": "^3.3.0",
+    "react-scripts": "^3.4.0",
     "reactstrap": "^8.2.0",
     "set-interval-async": "^1.0.30"
   },

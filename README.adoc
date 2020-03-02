@@ -13,6 +13,12 @@ When an invoice has been paid, the server notifies the client via websocket and 
 * rpi branch is for Raspberry Pi hosting server locally
 
 
+== Notes
+
+Since PWA apps only works with HTTPS, I use HTTPS even in development. Valid `server.crt` and `server.key` files are needed at the root of
+the project. You can follow this tutorial to generates them https://medium.com/@tbusser/creating-a-browser-trusted-self-signed-ssl-certificate-2709ce43fd15
+
+
 == See also
 
 * The point of sale website: https://coffee.bitcoin-studio.com

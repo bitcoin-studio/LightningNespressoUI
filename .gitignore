@@ -2,6 +2,8 @@ build/
 
 ## HTTPS certificate
 *.pem
+*.crt
+*.key
 
 # Created by .ignore support plugin (hsz.mobi)
 ### macOS template

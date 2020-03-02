@@ -24,12 +24,13 @@ let wsConnections: { [x: string]: WebSocket }[] = []
 
 // Server configuration
 const options = {
-  key: fs.readFileSync('key_coffee.pem'),
-  cert: fs.readFileSync('cert_coffee.pem')
+  key: fs.readFileSync(`${process.cwd()}/server.key`),
+  cert: fs.readFileSync(`${process.cwd()}/server.crt`)
 }
-const exp = express()
-const server = https.createServer(options, exp)
-const app: Application = expressWs(exp, server, {wsOptions: {clientTracking: true}}).app
+
+const appX: any = express()
+const server = https.createServer(options, appX)
+const app: Application = expressWs(appX, server, {wsOptions: {clientTracking: true}}).app
 
 // Serve any static files
 app.use(express.static(path.resolve(__dirname, '..')))
@@ -37,7 +38,10 @@ app.use(express.static(path.resolve(__dirname, '..')))
 // Security headers should be set at reverse proxy level
 app.use(cors({
   origin: [
-    'http://localhost:3000', // dev
+    'http://localhost:3000',
+    'https://localhost:3000',
+    'http://localhost:4000',
+    'https://localhost:4000',
   ]
 }))
 
@@ -239,7 +243,7 @@ const init: () => void = function () {
     .then(() => {
       createLndInvoiceStream()
       log.info('Starting server...')
-      app.listen(env.SERVER_PORT, () => log.info(`API Server started at http://localhost:${env.SERVER_PORT}!`))
+      server.listen(env.SERVER_PORT, () => log.info(`API Server started on port ${env.SERVER_PORT}!`))
     })
     .then(() => {
       // Ping LND to keep stream open
