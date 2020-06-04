@@ -1,4 +1,6 @@
 import express, {NextFunction, Request, Response} from 'express'
+import https from 'https'
+import fs from 'fs'
 import {createInvoice, getNode, subscribeToInvoices} from 'ln-service'
 import log from 'loglevel'
 import axios from 'axios'
@@ -10,6 +12,7 @@ import WebSocket from 'ws' // @types/ws
 import expressWs, {Application} from 'express-ws'
 import bodyParser from 'body-parser'
 import {randomBytes} from 'crypto'
+import path from 'path'
 import {env} from './env'
 import {initNode, lnd, nodePublicKey} from './node'
 
@@ -19,15 +22,29 @@ log.setLevel('trace')
 let wsConnections: { [x: string]: WebSocket }[] = []
 
 // Server configuration
-const app: Application = expressWs(express(), undefined, {wsOptions: {clientTracking: true}}).app
+const options = {
+  key: fs.readFileSync(`${process.cwd()}/server.key`),
+  cert: fs.readFileSync(`${process.cwd()}/server.crt`)
+}
+
+const appX: any = express()
+const server = https.createServer(options, appX)
+const app: Application = expressWs(appX, server, {wsOptions: {clientTracking: true}}).app
+
+// Serve any static files
+app.use(express.static(path.resolve(__dirname, '..')))
+
+// Security headers should be set at reverse proxy level
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://www.bitcoin-studio.com',
+    'https://localhost:3000',
+    'http://localhost:4000',
+    'https://localhost:4000',
   ]
 }))
+
 app.use(bodyParser.json())
-// Security headers should be set at reverse proxy level
 
 // Websocket route
 app.ws('/api/ws', (ws: WebSocket) => {
@@ -233,7 +250,7 @@ const init: () => void = function () {
     .then(() => {
       createLndInvoiceStream()
       log.info('Starting server...')
-      app.listen(env.SERVER_PORT, () => log.info(`API Server started at http://localhost:${env.SERVER_PORT}!`))
+      server.listen(env.SERVER_PORT, () => log.info(`API Server started on port ${env.SERVER_PORT}!`))
     })
     .then(() => {
       // Ping LND to keep stream open
