@@ -5,7 +5,7 @@
 This repository is part of a Do-It-Yourself vending machine project which connects to a Bitcoin point of sales terminal. +
 Select your coffee, pay with Bitcoin (via Lightning Network), and the vending machine will deliver your Nespresso capsule.
 
-This repository is the Bitcoin point of sale terminal code for the simple non-BTCPay version of https://github.com/bitcoin-studio/LightningNespressoServer[LightningNespressoServer].
+This repository is the Bitcoin point of sale terminal code for the non-BTCPay version of https://github.com/bitcoin-studio/LightningNespressoServer[LightningNespressoServer].
 
 When an invoice has been paid, the server notifies the client via websocket and sends a request to the vending machine which delivers the Nespresso capsule.
 

@@ -4,7 +4,7 @@
   "description": "Nespresso capsule vending machine Bitcoin point of sales terminal. Select your coffee, pay with Bitcoin (via Lightning Network), and the vending machine will deliver your Nespresso capsule.",
   "main": "build/index.js",
   "engines": {
-    "node": "=10"
+    "node": "=14"
   },
   "homepage": "https://coffee.bitcoin-studio.com",
   "proxy": "https://localhost:4000",
