@@ -23,7 +23,9 @@
     "lint": "concurrently -n client,server \"npm run lint:client\" \"npm run lint:server\"",
     "lint:client": "eslint --ext .ts,.tsx src/",
     "lint:server": "eslint --ext .ts server/",
-    "test": "start-test 3000 cypress:open"
+    "test": "start-test 3000 cypress:open",
+    "snyk-protect": "snyk protect",
+    "prepare": "yarn run snyk-protect"
   },
   "browserslist": {
     "production": [
@@ -55,7 +57,8 @@
     "react-dom": "^16.13.1",
     "react-scripts": "^3.4.1",
     "reactstrap": "^8.4.1",
-    "set-interval-async": "^1.0.32"
+    "set-interval-async": "^1.0.32",
+    "snyk": "^1.336.0"
   },
   "devDependencies": {
     "@cypress/code-coverage": "^3.8.1",
@@ -97,5 +100,6 @@
   "engines": {
     "node": "14"
   },
-  "proxy": "https://localhost:4000"
+  "proxy": "https://localhost:4000",
+  "snyk": true
 }
