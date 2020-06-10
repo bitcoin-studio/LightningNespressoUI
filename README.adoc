@@ -25,3 +25,36 @@ the project. You can follow this tutorial to generates them https://medium.com/@
 * The vending machine code: https://github.com/bitcoin-studio/LightningNespressoServer[LightningNespressoServer]
 * The 3D printed / laser cutted vending machine: https://www.thingiverse.com/thing:3772726[CAD files]
 * A description of the project: https://www.bitcoin-studio.com/resources[Bitcoin Studio website]
+
+
+== OpenFaaS
+
+=== Templates
+
+.Production Typescript Template
+ faas template pull https://github.com/Janaka-Steph/openfaas-template-typescript
+
+.Development Typescript Template
+ faas template pull https://github.com/Janaka-Steph/openfaas-template-typescriptdev
+
+=== Secrets
+
+Configuration variables are stored in `.env` file. +
+Also, make sure OPENFAAS_URL env var is set properly before running `faas` commands.
+
+ faas secret create lightning-nespresso-api-config --from-file=./api/.env
+
+=== Developing with Okteto
+
+.Make sure the prod image is deployed
+ faas up --regex api
+
+.Build a dev image
+ DEV=dev faas build --regex api
+
+.Push that image to Okteto container registry
+ DEV=dev faas push --regex api
+
+.Sync local source code with remote using dev image
+ cd function
+ okteto up
