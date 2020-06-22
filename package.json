@@ -46,7 +46,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
-    "ln-service": "^48.3.2",
+    "ln-service": "^49.0.2",
     "lodash.debounce": "^4.0.8",
     "loglevel": "^1.6.8",
     "qrcode.react": "^1.0.0",
@@ -91,7 +91,7 @@
     "source-map-support": "^0.5.19",
     "start-server-and-test": "^1.11.0",
     "ts-node-dev": "^1.0.0-pre.44",
-    "typescript": "^3.9.3",
+    "typescript": "^3.9.5",
     "whatwg-fetch": "^3.0.0"
   },
   "engines": {
