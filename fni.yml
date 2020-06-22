@@ -1,0 +1,21 @@
+apiVersion: openfaas.com/v1alpha2
+kind: FunctionIngress
+metadata:
+  name: lightning-nespresso
+  namespace: openfaas-fn
+  annotations:
+    # https://kubernetes.github.io/ingress-nginx/user-guide/miscellaneous/#websockets
+    # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#custom-timeouts
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "5400"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "5400"
+spec:
+  domain: "coffee.bitcoin-studio.com"
+  function: "lightning-nespresso"
+  ingressType: "nginx"
+  bypassGateway: true
+  path: ""
+  tls:
+    enabled: true
+    issuerRef:
+      name: "letsencrypt-prod"
+      kind: "Issuer"

@@ -8,10 +8,10 @@
     "jsx": "react",
     "lib": [
       "DOM",
-      "ESNext"
+      "ES2019"
     ],
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "noEmit": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
@@ -20,11 +20,15 @@
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
-    "target": "ES2015"
+    "target": "ES2019"
   },
   "include": [
     "src",
     "global.d.ts",
     "cypress/integration/**/*.js"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
   ]
 }

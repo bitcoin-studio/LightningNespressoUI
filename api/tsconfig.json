@@ -4,13 +4,13 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "lib": [
-      "ES2020"
+      "ES2019"
     ],
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
     "isolatedModules": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
@@ -18,12 +18,10 @@
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
-    "target": "ES2020"
+    "target": "ES2019"
   },
-  "include": [
-    "**/*"
-  ],
   "exclude": [
+    "ui",
     "node_modules"
   ]
 }

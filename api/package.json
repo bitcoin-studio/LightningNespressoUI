@@ -9,7 +9,7 @@
     "email": "bitcoin-studio@protonmail.com",
     "url": "https://bitcoin-studio.com"
   },
-  "main": "handler.ts",
+  "main": "index.ts",
   "scripts": {
     "build": "tsc",
     "dev": "ts-node-dev --inspect --respawn --project ./tsconfig.json ./handler.ts",
@@ -24,17 +24,16 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
-    "ln-service": "^48.4.1",
+    "ln-service": "^49.0.1",
     "loglevel": "^1.6.8",
     "set-interval-async": "^1.0.32"
   },
   "devDependencies": {
     "@types/async-retry": "^1.4.2",
     "@types/cors": "^2.8.6",
-    "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.6",
     "@types/express-ws": "^3.0.0",
-    "@types/node": "^14.0.11",
+    "@types/node": "^14.0.13",
     "@types/set-interval-async": "^1.0.0",
     "@types/ws": "^7.2.5",
     "@typescript-eslint/eslint-plugin": "^3.1.0",
