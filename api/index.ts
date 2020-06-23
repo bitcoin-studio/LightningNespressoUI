@@ -19,17 +19,6 @@ const app: Application = expressWs(express(), undefined, {wsOptions: {clientTrac
 
 // Serve any static files
 app.use(express.static(path.resolve(__dirname, 'ui', 'dist')))
-
-// Security headers should be set at reverse proxy level
-// app.use(cors({
-//   origin: [
-//     'http://localhost:3000',
-//     'https://localhost:3000',
-//     'http://localhost:4000',
-//     'https://localhost:4000',
-//   ]
-// }))
-
 app.use(bodyParser.json())
 
 // Websocket route
@@ -98,8 +87,7 @@ app.post('/api/generatePaymentRequest', async (req: Request, res: Response, next
   }
 })
 
-app.get('/health', (req: Request, res: Response) => {
-  log.info('health check')
+app.get('/_/health', (req: Request, res: Response) => {
   res.status(200).send()
 })
 
