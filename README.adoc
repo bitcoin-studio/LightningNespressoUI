@@ -19,23 +19,9 @@ Since PWA apps only works with HTTPS, I use HTTPS even in development. Valid `se
 the project. You can follow this tutorial to generates them https://medium.com/@tbusser/creating-a-browser-trusted-self-signed-ssl-certificate-2709ce43fd15
 
 
-== See also
-
-* The point of sale website: https://coffee.bitcoin-studio.com
-* The vending machine code: https://github.com/bitcoin-studio/LightningNespressoServer[LightningNespressoServer]
-* The 3D printed / laser cutted vending machine: https://www.thingiverse.com/thing:3772726[CAD files]
-* A description of the project: https://www.bitcoin-studio.com/resources[Bitcoin Studio website]
-
-
 == OpenFaaS
 
-=== Templates
-
-.Production Typescript Template
- faas template pull https://github.com/Janaka-Steph/openfaas-template-typescript
-
-.Development Typescript Template
- faas template pull https://github.com/Janaka-Steph/openfaas-template-typescriptdev
+The app is served as an Express app using the OpenFaaS Dockerfile Template.
 
 === Secrets
 
@@ -44,7 +30,7 @@ Also, make sure OPENFAAS_URL env var is set properly before running `faas` comma
 
  faas secret create lightning-nespresso-api-config --from-file=./api/.env
 
-=== Developing with Okteto
+=== Developing with Okteto (WIP)
 
 .Make sure the prod image is deployed
  faas up --regex api
@@ -58,3 +44,11 @@ Also, make sure OPENFAAS_URL env var is set properly before running `faas` comma
 .Sync local source code with remote using dev image
  cd function
  okteto up
+
+
+== See also
+
+* The point of sale website: https://coffee.bitcoin-studio.com
+* The vending machine code: https://github.com/bitcoin-studio/LightningNespressoServer[LightningNespressoServer]
+* The 3D printed / laser cutted vending machine: https://www.thingiverse.com/thing:3772726[CAD files]
+* A description of the project: https://www.bitcoin-studio.com/resources[Bitcoin Studio website]

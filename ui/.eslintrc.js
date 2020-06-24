@@ -39,7 +39,7 @@ module.exports = {
     'import/prefer-default-export': ['off'],
     'prefer-arrow-callback': ['warn', {'allowNamedFunctions': true, 'allowUnboundThis': false}],
     'max-len': ['warn', {'code': 120}],
-    'no-console': ['warn'],
+    'no-console': ['off'],
     'no-trailing-spaces': ['warn', { 'skipBlankLines': true }],
     'no-underscore-dangle': ['off'],
     'object-curly-newline': ['off'],

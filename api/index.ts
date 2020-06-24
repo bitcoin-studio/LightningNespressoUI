@@ -1,4 +1,6 @@
 import express, {NextFunction, Request, Response} from 'express'
+import expressStaticGzip from 'express-static-gzip'
+import expressWs, {Application} from 'express-ws'
 import {createInvoice, getNode, subscribeToInvoices} from 'ln-service'
 import log from 'loglevel'
 import axios from 'axios'
@@ -6,19 +8,31 @@ import retry from 'async-retry'
 import {setIntervalAsync} from 'set-interval-async/dynamic'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import WebSocket from 'ws' // @types/ws
-import expressWs, {Application} from 'express-ws'
 import bodyParser from 'body-parser'
 import {randomBytes} from 'crypto'
-import path from 'path'
+import {resolve} from 'path'
 import {env} from './env'
 import {initNode, lnd, nodePublicKey} from './node'
+import {setLongTermCache, setNoCache} from './httpHeaders'
 
 log.setLevel('trace')
 let wsConnections: {[x: string]: WebSocket}[] = []
 const app: Application = expressWs(express(), undefined, {wsOptions: {clientTracking: true}}).app
 
-// Serve any static files
-app.use(express.static(path.resolve(__dirname, 'ui', 'dist')))
+// Serve brotli pre-compressed static files with cache-control header
+app.use(expressStaticGzip(resolve(__dirname, 'ui', 'dist'), {
+  enableBrotli: true,
+  serveStatic: {
+    setHeaders: (res: Response, path: string) => {
+      const file = path.split('/').pop()
+      if (file === 'service-worker.js.br' || file === 'index.html.br') {
+        setNoCache(res)
+      } else {
+        setLongTermCache(res)
+      }
+    }
+  }
+}))
 app.use(bodyParser.json())
 
 // Websocket route
@@ -111,6 +125,10 @@ app.get('/api/getNodeInfo', async (req: Request, res: Response, next: NextFuncti
   } catch (err) {
     next(err)
   }
+})
+
+app.get('*', (req: Request, res: Response) => {
+  res.redirect('/')
 })
 
 // gRPC status codes

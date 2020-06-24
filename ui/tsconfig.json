@@ -23,6 +23,7 @@
     "target": "ES2019"
   },
   "include": [
+    "compress.js",
     "src",
     "global.d.ts",
     "cypress/integration/**/*.js"

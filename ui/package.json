@@ -12,11 +12,13 @@
   "main": "build/index.js",
   "scripts": {
     "build": "react-scripts build && rm -rf dist && mv build dist",
+    "compress": "node -e 'require(\"./compress.js\").brotliCompress(\"dist\")'",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "dev": "react-scripts -r @cypress/instrument-cra start",
     "eject": "react-scripts eject",
     "lint": "eslint --ext .ts,.tsx src/",
+    "postbuild": "npm run compress",
     "test-ci": "start-test dev 3000 cypress:run"
   },
   "browserslist": {
