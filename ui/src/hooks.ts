@@ -28,7 +28,6 @@ export function useInterval(callback, delay) {
   }, [delay])
 }
 
-
 export function useTimeout(callback, delay) {
   const savedCallback = useRef(null)
 

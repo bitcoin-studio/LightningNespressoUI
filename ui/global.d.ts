@@ -1,3 +1,5 @@
+declare module 'ln-service'
+
 type App = {
   wsClientId: string
   error: string

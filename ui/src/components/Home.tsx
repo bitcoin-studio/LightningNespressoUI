@@ -130,7 +130,6 @@ export const Home: React.FC<Props> = (
     }
   }, [modalState.isModalOpen, setError])
 
-
   /**
    * Prepare UI components with data
    */

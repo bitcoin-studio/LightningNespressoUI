@@ -1,0 +1,5 @@
+okteto.yml
+.git
+.vscode
+.idea
+node_modules

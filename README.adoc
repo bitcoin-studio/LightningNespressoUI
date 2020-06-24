@@ -9,14 +9,42 @@ This repository is the Bitcoin point of sale terminal code for the simple non-BT
 
 When an invoice has been paid, the server notifies the client via websocket and sends a request to the vending machine which delivers the Nespresso capsule.
 
-* master branch is for a server hosted remotely
+* master branch is for express app hosted on Kubernetes cluster
 * rpi branch is for Raspberry Pi hosting server locally
+* vps branch is for express app hosted on VPS
 
 
 == Notes
 
 Since PWA apps only works with HTTPS, I use HTTPS even in development. Valid `server.crt` and `server.key` files are needed at the root of
 the project. You can follow this tutorial to generates them https://medium.com/@tbusser/creating-a-browser-trusted-self-signed-ssl-certificate-2709ce43fd15
+
+
+== OpenFaaS
+
+The app is served as an Express app using the OpenFaaS Dockerfile Template.
+
+=== Secrets
+
+Configuration variables are stored in `.env` file. +
+Also, make sure OPENFAAS_URL env var is set properly before running `faas` commands.
+
+ faas secret create lightning-nespresso-api-config --from-file=./api/.env
+
+=== Developing with Okteto (WIP)
+
+.Make sure the prod image is deployed
+ faas up --regex api
+
+.Build a dev image
+ DEV=dev faas build --regex api
+
+.Push that image to Okteto container registry
+ DEV=dev faas push --regex api
+
+.Sync local source code with remote using dev image
+ cd function
+ okteto up
 
 
 == See also

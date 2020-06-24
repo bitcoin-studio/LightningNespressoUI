@@ -1,0 +1,18 @@
+version: 1.0
+provider:
+  name: openfaas
+  #gateway: https://openfaas-ingress-janaka-steph.cloud.okteto.net
+  gateway: https://openfaas.bitcoin-studio.com
+
+functions:
+  lightning-nespresso:
+    lang: dockerfile
+    handler: ./api
+    #image: registry.cloud.okteto.net/janaka-steph/lightning-nespresso
+    image: janakasteph/lightning-nespresso
+    secrets:
+      - lightning-nespresso-api-config
+
+configuration:
+  copy:
+    - ./ui/dist

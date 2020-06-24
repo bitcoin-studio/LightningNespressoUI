@@ -49,7 +49,6 @@ export const PaymentModal: React.FC<Props> = (
       })
   }, [])
 
-
   return (
     <>
       <Row noGutters={true} className="invoiceInfo">

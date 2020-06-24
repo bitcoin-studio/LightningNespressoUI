@@ -1,7 +1,7 @@
 {
   "short_name": "LN Nespresso",
   "name": "LN Nespresso",
-  "start_url": ".",
+  "start_url": "/function/lightning-nespresso-ui",
   "display": "standalone",
   "theme_color": "#ffffff",
   "background_color": "#ffffff",

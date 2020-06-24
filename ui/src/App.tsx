@@ -169,7 +169,6 @@ export const App: React.FC = () => {
       })
   }, [wsConnect])
 
-
   if (isWsConnected) {
     uiContent = (
       <ModalContext.Provider value={modalContext}>

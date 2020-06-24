@@ -1,0 +1,10 @@
+name: lightning-nespresso-api
+image: registry.cloud.okteto.net/janaka-steph/lightning-nespresso-api:dev
+labels:
+  faas_function: lightning-nespresso-api
+workdir: /home/app
+mountpath: /home/app/function
+persistentVolume:
+  enabled: true
+environment:
+  - fprocess=ts-node --files --project function/tsconfig.json index.ts

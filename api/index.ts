@@ -1,49 +1,38 @@
 import express, {NextFunction, Request, Response} from 'express'
-import https from 'https'
-import fs from 'fs'
+import expressStaticGzip from 'express-static-gzip'
+import expressWs, {Application} from 'express-ws'
 import {createInvoice, getNode, subscribeToInvoices} from 'ln-service'
 import log from 'loglevel'
 import axios from 'axios'
 import retry from 'async-retry'
-import cors from 'cors'
 import {setIntervalAsync} from 'set-interval-async/dynamic'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import WebSocket from 'ws' // @types/ws
-import expressWs, {Application} from 'express-ws'
 import bodyParser from 'body-parser'
 import {randomBytes} from 'crypto'
-import path from 'path'
+import {resolve} from 'path'
 import {env} from './env'
 import {initNode, lnd, nodePublicKey} from './node'
+import {setLongTermCache, setNoCache} from './httpHeaders'
 
-// Set log level
 log.setLevel('trace')
+let wsConnections: {[x: string]: WebSocket}[] = []
+const app: Application = expressWs(express(), undefined, {wsOptions: {clientTracking: true}}).app
 
-let wsConnections: { [x: string]: WebSocket }[] = []
-
-// Server configuration
-const options = {
-  key: fs.readFileSync(`${process.cwd()}/server.key`),
-  cert: fs.readFileSync(`${process.cwd()}/server.crt`)
-}
-
-const appX: any = express()
-const server = https.createServer(options, appX)
-const app: Application = expressWs(appX, server, {wsOptions: {clientTracking: true}}).app
-
-// Serve any static files
-app.use(express.static(path.resolve(__dirname, '..')))
-
-// Security headers should be set at reverse proxy level
-app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://localhost:3000',
-    'http://localhost:4000',
-    'https://localhost:4000',
-  ]
+// Serve brotli pre-compressed static files with cache-control header
+app.use(expressStaticGzip(resolve(__dirname, 'ui', 'dist'), {
+  enableBrotli: true,
+  serveStatic: {
+    setHeaders: (res: Response, path: string) => {
+      const file = path.split('/').pop()
+      if (file === 'service-worker.js.br' || file === 'index.html.br') {
+        setNoCache(res)
+      } else {
+        setLongTermCache(res)
+      }
+    }
+  }
 }))
-
 app.use(bodyParser.json())
 
 // Websocket route
@@ -112,6 +101,10 @@ app.post('/api/generatePaymentRequest', async (req: Request, res: Response, next
   }
 })
 
+app.get('/_/health', (req: Request, res: Response) => {
+  res.status(200).send()
+})
+
 app.get('/api/getPrice', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const price = await axios('https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=EUR')
@@ -134,8 +127,8 @@ app.get('/api/getNodeInfo', async (req: Request, res: Response, next: NextFuncti
   }
 })
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('You need to load the webpack-dev-server page, not the server page!')
+app.get('*', (req: Request, res: Response) => {
+  res.redirect('/')
 })
 
 // gRPC status codes
@@ -166,7 +159,7 @@ const notifyClient: notifyClient = function (data, wsClientId) {
 
 // Call ESP8266 - Deliver coffee
 const deliverCoffee = (invoiceEvent: InvoiceEvent, wsClientIdFromInvoice: string): void => {
-  const id = invoiceEvent?.description?.charAt(1)
+  const id: string = invoiceEvent?.description?.charAt(1)
   log.info(`Deliver coffee on rail ${id}`)
   const body = {coffee: id}
   retry(async (bail, attemptNum) => {
@@ -193,7 +186,7 @@ const createLndInvoiceStream: () => void = function () {
 
   // SubscribeInvoices returns a uni-directional stream (server -> client)
   const subscribe: () => void = () => {
-    const lndInvoicesStream = subscribeToInvoices({lnd})
+    const lndInvoicesStream: NodeJS.EventEmitter = subscribeToInvoices({lnd})
     lndInvoicesStream
       .on('invoice_updated', (invoiceEvent: InvoiceEvent) => {
         // Skip unpaid / irrelevant invoice updates
@@ -205,12 +198,12 @@ const createLndInvoiceStream: () => void = function () {
         const wsClientIdFromInvoice = invoiceEvent.description.substr(invoiceEvent.description.indexOf('@') + 1, 4)
         deliverCoffee(invoiceEvent, wsClientIdFromInvoice)
       })
-      .on('status', (status: { details: any; code: any }) => {
+      .on('status', (status: { details: string; code: number }) => {
         log.warn(`SubscribeInvoices status: ${status.details} - Code: ${status.code}`)
         // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
       })
       .on('error', (error: NodeJS.ErrnoException) => {
-        log.error(`SubscribeInvoices error: ${error}`)
+        log.error(`SubscribeInvoices error: ${String(error)}`)
         // Broadcast to all ws clients
         wsConnections.forEach((connection) => {
           notifyClient({msg: error.code, wsEventType: 'error'}, Object.keys(connection)[0])
@@ -250,7 +243,7 @@ const init: () => void = function () {
     .then(() => {
       createLndInvoiceStream()
       log.info('Starting server...')
-      server.listen(env.SERVER_PORT, () => log.info(`API Server started on port ${env.SERVER_PORT}!`))
+      app.listen(env.SERVER_PORT, () => log.info(`API Server started on port ${env.SERVER_PORT}!`))
     })
     .then(() => {
       // Ping LND to keep stream open
@@ -260,8 +253,9 @@ const init: () => void = function () {
           .catch((err: any) => log.error(err))
       }, (1000 * 60 * 9))
     })
-    .catch((err) => {
+    .catch((err: Error) => {
       log.error('Server initialization failed ', err)
     })
 }
+
 init()

@@ -37,7 +37,11 @@ class API {
   }
 
   // Establish websocket connection with server
+  // eslint-disable-next-line class-methods-use-this
   getWebSocket() {
+    // const regex = /^https?/
+    // const wsUrl = this.url.replace(regex, 'ws')
+    // return new WebSocket('ws://coffee.bitcoin-studio.com/ws')
     const wsUrl = this.url.replace('https', 'wss').replace('http', 'ws')
     return new WebSocket(`${wsUrl}/ws`)
   }
