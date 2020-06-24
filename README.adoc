@@ -9,9 +9,9 @@ This repository is the Bitcoin point of sale terminal code for the simple non-BT
 
 When an invoice has been paid, the server notifies the client via websocket and sends a request to the vending machine which delivers the Nespresso capsule.
 
-* master branch is for a server hosted remotely
+* master branch is for express app hosted on Kubernetes cluster
 * rpi branch is for Raspberry Pi hosting server locally
-
+* vps branch is for express app hosted on VPS
 
 == Notes
 
