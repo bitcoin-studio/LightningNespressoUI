@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   'extends': [
     'airbnb-typescript',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',

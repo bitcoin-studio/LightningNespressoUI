@@ -228,7 +228,7 @@ const init: () => void = function () {
           log.info('Node info ', nodeInfo)
           log.info('Connected to LND instance!')
         })
-        .catch((err: any) => log.error(err))
+        .catch((err: LnServiceError) => log.error(err))
     })
     .then(async () => {
       await createLndInvoiceStream()
@@ -238,10 +238,10 @@ const init: () => void = function () {
       setIntervalAsync(() => {
         getNode({lnd, public_key: nodePublicKey})
           .then(() => log.info('Ping LND...'))
-          .catch((err: any) => log.error(err))
+          .catch((err: LnServiceError) => log.error(err))
       }, (1000 * 60 * 9))
     })
-    .catch((err: Error) => {
+    .catch((err: Error | LnServiceError) => {
       log.error('Server initialization failed ', err)
     })
 }
