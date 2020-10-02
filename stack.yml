@@ -12,6 +12,11 @@ functions:
     image: janakasteph/lightning-nespresso
     secrets:
       - lightning-nespresso-api-config
+    limits:
+      memory: 128Mi
+    requests:
+      memory: 32Mi
+      cpu: 50m
 
 configuration:
   copy:

@@ -2,7 +2,6 @@ import express, {NextFunction, Request, Response} from 'express'
 import expressStaticGzip from 'express-static-gzip'
 import expressWs, {Application} from 'express-ws'
 import {createInvoice, getNode, subscribeToInvoices} from 'ln-service'
-import log from 'loglevel'
 import axios from 'axios'
 import retry from 'async-retry'
 import {setIntervalAsync} from 'set-interval-async/dynamic'
@@ -11,12 +10,12 @@ import WebSocket from 'ws' // @types/ws
 import bodyParser from 'body-parser'
 import {randomBytes} from 'crypto'
 import {resolve} from 'path'
+import {log} from './logger'
 import {env} from './env'
 import {initNode, lnd, nodePublicKey} from './node'
 import {setLongTermCache, setNoCache} from './httpHeaders'
 
-log.setLevel('trace')
-let wsConnections: {[x: string]: WebSocket}[] = []
+let wsConnections: { [x: string]: WebSocket }[] = []
 const app: Application = expressWs(express(), undefined, {wsOptions: {clientTracking: true}}).app
 
 // Serve brotli pre-compressed static files with cache-control header
@@ -30,8 +29,8 @@ app.use(expressStaticGzip(resolve(__dirname, 'ui', 'dist'), {
       } else {
         setLongTermCache(res)
       }
-    }
-  }
+    },
+  },
 }))
 app.use(bodyParser.json())
 
@@ -136,8 +135,8 @@ app.get('*', (req: Request, res: Response) => {
 // TODO: Check type enforcement error.code
 type errorCode = string | undefined
 type wsEventType = 'delivery-failure' | 'invoice-settlement' | 'error'
-type notifyClient = (data: {msg: InvoiceEvent | errorCode, wsEventType: wsEventType}, wsClientId: string) => void
-const notifyClient: notifyClient = function (data, wsClientId) {
+type NotifyClient = (data: { msg: InvoiceEvent | errorCode, wsEventType: wsEventType }, wsClientId: string) => void
+const notifyClient: NotifyClient = function (data, wsClientId) {
   wsConnections.forEach((connection) => {
     const id = Object.keys(connection)[0]
     if (wsClientId === id) {
@@ -147,52 +146,45 @@ const notifyClient: notifyClient = function (data, wsClientId) {
         JSON.stringify({
           type: data.wsEventType,
           data: data.msg,
-        }), (err) => {
-          if (err) {
-            log.error(`Failed to notify client ${id}`, err)
-          }
-        },
+        }), (err) => err && log.error(`Failed to notify client ${id}`, err),
       )
     }
   })
 }
 
 // Call ESP8266 - Deliver coffee
-const deliverCoffee = (invoiceEvent: InvoiceEvent, wsClientIdFromInvoice: string): void => {
-  const id: string = invoiceEvent?.description?.charAt(1)
-  log.info(`Deliver coffee on rail ${id}`)
-  const body = {coffee: id}
-  retry(async (bail, attemptNum) => {
-    log.debug(`Attempt deliver coffee #${attemptNum}`)
-    await axios({
-      url: env.VENDING_MACHINE,
-      method: 'post',
-      data: JSON.stringify(body),
-      headers: {'Content-Type': 'application/json'},
-    })
-  }, {retries: 3})
-    .then(() => {
-      log.info('Request to vending machine sent')
-      notifyClient({msg: invoiceEvent, wsEventType: 'invoice-settlement'}, wsClientIdFromInvoice)
-    })
-    .catch((err) => {
-      notifyClient({msg: err, wsEventType: 'delivery-failure'}, wsClientIdFromInvoice)
-      log.error(err.message)
-    })
+const deliverCoffee = function (invoiceEvent: InvoiceEvent, wsClientIdFromInvoice: string): void {
+  try {
+    const id: string = invoiceEvent?.description?.charAt(1)
+    log.info(`Deliver coffee on rail ${id}`)
+    const body = {coffee: id}
+    retry(async (bail, attemptNum) => {
+      log.debug(`Attempt deliver coffee #${attemptNum}`)
+      await axios({
+        url: env.VENDING_MACHINE,
+        method: 'post',
+        data: JSON.stringify(body),
+        headers: {'Content-Type': 'application/json'},
+      })
+    }, {retries: 3})
+    log.info('Request to vending machine sent')
+    notifyClient({msg: invoiceEvent, wsEventType: 'invoice-settlement'}, wsClientIdFromInvoice)
+  } catch (err) {
+    notifyClient({msg: err, wsEventType: 'delivery-failure'}, wsClientIdFromInvoice)
+    log.error(err.message)
+  }
 }
 
-const createLndInvoiceStream: () => void = function () {
-  log.info('Opening LND invoice stream...')
-
-  // SubscribeInvoices returns a uni-directional stream (server -> client)
-  const subscribe: () => void = () => {
+const createLndInvoiceStream = async function () {
+  log.info('Creating LND invoice stream...')
+  try {
+    // SubscribeInvoices returns a uni-directional stream (server -> client)
     const lndInvoicesStream: NodeJS.EventEmitter = subscribeToInvoices({lnd})
     lndInvoicesStream
       .on('invoice_updated', (invoiceEvent: InvoiceEvent) => {
         // Skip unpaid / irrelevant invoice updates
         // Memo should start with '#'
         if (!invoiceEvent.is_confirmed || !invoiceEvent.description.startsWith('#')) return
-
         // Handle Invoice Settlement
         log.info(`Invoice settled - ${invoiceEvent.description}`)
         const wsClientIdFromInvoice = invoiceEvent.description.substr(invoiceEvent.description.indexOf('@') + 1, 4)
@@ -202,29 +194,27 @@ const createLndInvoiceStream: () => void = function () {
         log.warn(`SubscribeInvoices status: ${status.details} - Code: ${status.code}`)
         // https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
       })
-      .on('error', (error: NodeJS.ErrnoException) => {
-        log.error(`SubscribeInvoices error: ${String(error)}`)
+      .on('error', (error: LnServiceError) => {
+        log.error(`SubscribeInvoices error code: ${error[0]}`)
+        log.error(`SubscribeInvoices error message: ${error[1]}`)
+        log.error(`SubscribeInvoices error details: ${JSON.stringify(error[2])}`)
+        log.error('')
         // Broadcast to all ws clients
         wsConnections.forEach((connection) => {
-          notifyClient({msg: error.code, wsEventType: 'error'}, Object.keys(connection)[0])
+          notifyClient({msg: error[1], wsEventType: 'error'}, Object.keys(connection)[0])
         })
+        // Terminate the process synchronously, Kubernetes enters CrashLoopBackOff
+        process.exit(1)
       })
       .on('end', () => {
         log.error('Stream end event. No more data to be consumed from lndInvoicesStream')
       })
-  }
-
-  retry(async (bail, attemptNum) => {
-    log.debug(`Attempt createLndInvoiceStream #${attemptNum}`)
-    subscribe()
     log.debug('Check connection to LND instance...')
     await getNode({lnd, public_key: nodePublicKey})
-  }, {retries: 3})
-    .then(() => log.debug('LND invoice stream opened successfully'))
-    .catch((err) => {
-      log.error('Catch retry createLndInvoiceStream')
-      log.error(err)
-    })
+    log.debug('LND invoice stream opened successfully')
+  } catch (err) {
+    log.error(err)
+  }
 }
 
 // General server initialization
@@ -240,12 +230,10 @@ const init: () => void = function () {
         })
         .catch((err: any) => log.error(err))
     })
-    .then(() => {
-      createLndInvoiceStream()
+    .then(async () => {
+      await createLndInvoiceStream()
       log.info('Starting server...')
       app.listen(env.SERVER_PORT, () => log.info(`API Server started on port ${env.SERVER_PORT}!`))
-    })
-    .then(() => {
       // Ping LND to keep stream open
       setIntervalAsync(() => {
         getNode({lnd, public_key: nodePublicKey})

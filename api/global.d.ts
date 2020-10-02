@@ -46,3 +46,6 @@ type InvoiceEvent = {
   secret?: string
   tokens?: number
 }
+
+// Ln-service library has its own way of formatting errors
+type LnServiceError = [number, string, {err: {code: string, metadata: {}, details: string}}]
