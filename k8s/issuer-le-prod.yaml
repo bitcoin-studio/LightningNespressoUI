@@ -3,6 +3,7 @@ apiVersion: cert-manager.io/v1alpha2
 kind: Issuer
 metadata:
   name: letsencrypt-prod
+  namespace: openfaas-fn
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
