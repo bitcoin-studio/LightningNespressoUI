@@ -24,6 +24,18 @@ the project. You can follow this tutorial to generates them https://medium.com/@
 
 The app is served as an Express app using the OpenFaaS Dockerfile Template.
 
+=== Non standard Ingress operator
+
+This app uses a non-standard Ingress Operator that bypass the OpenFaaS Gateway. This is because of the use of the unsupported protocols
+gRPC and websockets. +
+Read more at https://github.com/openfaas-incubator/ingress-operator#bypass-mode
+
+A LetsEncrypt Issuer must be available on openfaas-fn namespace
+ kubectl apply -f k8s/issuer-le-prod.yaml -n openfaas-fn
+
+Deploy Ingress Operator
+ kubectl apply -R -f k8s/ingress_operator
+
 === Secrets
 
 Configuration variables are stored in `.env` file. +

@@ -3,6 +3,7 @@ apiVersion: openfaas.com/v1alpha2
 kind: FunctionIngress
 metadata:
   name: lightning-nespresso
+  # For this app Ingress records must be created in the same namespace as the backend service
   namespace: openfaas-fn
   annotations:
     # https://kubernetes.github.io/ingress-nginx/user-guide/miscellaneous/#websockets
@@ -13,6 +14,8 @@ spec:
   domain: "coffee.bitcoin-studio.com"
   function: "lightning-nespresso"
   ingressType: "nginx"
+  # This app uses an non-standard Ingress operator
+  # https://github.com/openfaas-incubator/ingress-operator#bypass-mode
   bypassGateway: true
   path: ""
   tls:
